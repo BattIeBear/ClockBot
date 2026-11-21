@@ -13,13 +13,15 @@ namespace Bot.DSharp
         private readonly DSharpGuild m_guild;
         private readonly DSharpChannel m_channel;
         private readonly DSharpMember m_member;
+        private readonly bool m_ephemeral;
 
-        public DSharpInteractionContext(InteractionContext wrapped)
+        public DSharpInteractionContext(InteractionContext wrapped, bool ephemeral = false)
             :base(wrapped)
         {
             m_guild = new DSharpGuild(Wrapped.Guild);
             m_channel = new DSharpChannel(Wrapped.Channel);
             m_member = new DSharpMember(Wrapped.Member);
+            m_ephemeral = ephemeral;
         }
 
         public IServiceProvider Services => Wrapped.Services;
@@ -32,7 +34,7 @@ namespace Bot.DSharp
 
         public IEnumerable<string> ComponentValues => Enumerable.Empty<string>();
 
-        public Task DeferInteractionResponse() => Wrapped.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+        public Task DeferInteractionResponse() => Wrapped.DeferAsync(m_ephemeral);
 
         public Task EditResponseAsync(IBotWebhookBuilder webhookBuilder)
         {

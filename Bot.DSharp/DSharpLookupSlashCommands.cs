@@ -8,11 +8,11 @@ namespace Bot.DSharp
     {
         public IBotLookupService? BotLookup { get; set; }
 
-        [SlashCommand("lookup", "Look up a character")]
+        [SlashCommand("role", "Look up a role")]
         public Task LookupCommand(InteractionContext ctx,
-            [Option("lookupString", "String you want to look up")]string lookupString)
+            [Option("lookupString", "Role you want to look up")]string lookupString)
         {
-            return BotLookup!.LookupAsync(new DSharpInteractionContext(ctx), lookupString);
+            return BotLookup!.LookupAsync(new DSharpInteractionContext(ctx, true), lookupString);
         }
 
         [SlashCommand("addScript", "Add a script json URL for later lookup")]

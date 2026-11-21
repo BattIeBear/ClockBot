@@ -61,7 +61,7 @@ namespace Bot.DSharp
                 typeof(DSharpSetupSlashCommands),
             };
 
-            List<ulong> devGuildIds = new() { 128585855097896963ul, 215551375608643586ul };
+            List<ulong> devGuildIds = new() { 1572983022158876765ul };
             if (m_deployType == "dev")
             {
                 // The "dev" deploy should only be used by us doing development locally and using the 
