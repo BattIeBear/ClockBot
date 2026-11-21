@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Bot.Api
@@ -40,5 +42,8 @@ namespace Bot.Api
             string townName);
         public Task RemoveTownAsync(IBotInteractionContext ctx, 
             IChannelCategory? dayCat);
+
+        public Task PlayerCountAsync(IBotInteractionContext ctx);
+        
     }
 }

@@ -4,6 +4,7 @@ using Bot.Core.Interaction;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Threading.Tasks;
 using static Bot.Api.IBaseChannel;
 
@@ -30,9 +31,9 @@ namespace Bot.Core
             sp.Inject(out m_interactionWrapper);
         }
 
-        public Task AddTownAsync(IBotInteractionContext ctx, 
-            IChannel controlChan, 
-            IChannel townSquare, 
+        public Task AddTownAsync(IBotInteractionContext ctx,
+            IChannel controlChan,
+            IChannel townSquare,
             IChannelCategory dayCat,
             IChannelCategory? nightCat,
             IRole stRole,
@@ -47,15 +48,15 @@ namespace Bot.Core
             m_interactionWrapper.WrapInteractionAsync($"Modifying town...", ctx,
                 l => PerformModifyTown(l, ctx, chatChannel, nightCat));
 
-        public Task CreateTownAsync(IBotInteractionContext ctx, 
-            string townName, 
-            IRole? guildPlayerRole, 
-            IRole? guildStRole, 
-            bool useNight) => 
-            m_interactionWrapper.WrapInteractionAsync($"Creating town **{townName}**...", ctx, 
+        public Task CreateTownAsync(IBotInteractionContext ctx,
+            string townName,
+            IRole? guildPlayerRole,
+            IRole? guildStRole,
+            bool useNight) =>
+            m_interactionWrapper.WrapInteractionAsync($"Creating town **{townName}**...", ctx,
                 l => PerformCreateTown(l, ctx, townName, guildPlayerRole, guildStRole, useNight));
-        public Task TownInfoAsync(IBotInteractionContext ctx) => 
-            m_interactionWrapper.WrapInteractionAsync($"Looking up town...", ctx, 
+        public Task TownInfoAsync(IBotInteractionContext ctx) =>
+            m_interactionWrapper.WrapInteractionAsync($"Looking up town...", ctx,
                 l => PerformTownInfo(l, ctx));
         public Task DestroyTownAsync(IBotInteractionContext ctx, string townName) =>
             m_interactionWrapper.WrapInteractionAsync($"Destroying channels and roles for town **{townName}**...", ctx,
@@ -64,7 +65,7 @@ namespace Bot.Core
         public Task RemoveTownAsync(IBotInteractionContext ctx, IChannelCategory? dayCat)
         {
             string msg = $"Removing town...";
-            if(dayCat != null)
+            if (dayCat != null)
                 msg = $"Removing town {dayCat.Name}...";
 
             return m_interactionWrapper.WrapInteractionAsync(msg, ctx,
@@ -98,14 +99,14 @@ namespace Bot.Core
             return InteractionResult.FromMessage("Couldn't find a valid town to modify associated with this channel. Are you in the control channel for the town to modify?");
         }
 
-            private async Task<InteractionResult> PerformAddTown(IProcessLogger _, IBotInteractionContext ctx, 
-            IChannel controlChan,
-            IChannel townSquare,
-            IChannelCategory dayCat,
-            IChannelCategory? nightCat,
-            IRole stRole,
-            IRole villagerRole,
-            IChannel? chatChan)
+        private async Task<InteractionResult> PerformAddTown(IProcessLogger _, IBotInteractionContext ctx,
+        IChannel controlChan,
+        IChannel townSquare,
+        IChannelCategory dayCat,
+        IChannelCategory? nightCat,
+        IRole stRole,
+        IRole villagerRole,
+        IChannel? chatChan)
         {
 
             Town newTown = new()
@@ -138,13 +139,13 @@ namespace Bot.Core
             string townName = "unknown";
             var guild = ctx.Guild;
             bool success = false;
-            ITownRecord? townRec = dayCat == null ? 
+            ITownRecord? townRec = dayCat == null ?
                 await m_townDb.GetTownRecordAsync(guild.Id, ctx.Channel.Id) :
                 await m_townDb.GetTownRecordByNameAsync(guild.Id, dayCat.Name);
 
             if (townRec != null)
             {
-                if(townRec.DayCategory != null)
+                if (townRec.DayCategory != null)
                     townName = townRec.DayCategory;
                 success = await RemoveTown(townRec);
             }
@@ -181,29 +182,29 @@ namespace Bot.Core
 
             // Night Category
             var nightCat = guild.GetCategoryByName(tdesc.NightCategoryName!);
-            if(nightCat != null)
+            if (nightCat != null)
             {
                 var toDestroy = new List<IChannel>();
-                foreach(var channel in nightCat.Channels)
+                foreach (var channel in nightCat.Channels)
                 {
-                    if(channel.IsVoice && channel.Name == IBotSetup.DefaultCottageName)
+                    if (channel.IsVoice && channel.Name == IBotSetup.DefaultCottageName)
                     {
                         toDestroy.Add(channel);
                     }
                 }
 
-                foreach(var channel in toDestroy)
+                foreach (var channel in toDestroy)
                 {
                     await channel.DeleteAsync();
                 }
 
-                if(nightCat.Channels.Count == 0)
+                if (nightCat.Channels.Count == 0)
                 {
                     await nightCat.DeleteAsync();
                 }
                 else
                 {
-                    foreach(var channel in nightCat.Channels)
+                    foreach (var channel in nightCat.Channels)
                     {
                         notDeletedUnfamiliar.Add($"**{nightCat.Name}** / **{channel.Name}**");
                     }
@@ -213,33 +214,33 @@ namespace Bot.Core
             }
 
             var dayCat = guild.GetCategoryByName(tdesc.DayCategoryName);
-            if(dayCat != null)
+            if (dayCat != null)
             {
                 var chatChan = dayCat.GetChannelByName(ChannelHelper.MakeTextChannelName(tdesc.ChatChannelName));
-                if(chatChan != null && chatChan.IsText)
+                if (chatChan != null && chatChan.IsText)
                 {
                     await chatChan.DeleteAsync();
                 }
 
                 var townSquare = dayCat.GetChannelByName(tdesc.TownSquareName);
-                if(townSquare != null && townSquare.IsVoice)
+                if (townSquare != null && townSquare.IsVoice)
                 {
                     await townSquare.DeleteAsync();
                 }
 
-                foreach(string s in DefaultExtraDayChannels)
+                foreach (string s in DefaultExtraDayChannels)
                 {
                     var chan = dayCat.GetChannelByName(s);
-                    if(chan != null && chan.IsVoice)
+                    if (chan != null && chan.IsVoice)
                     {
                         await chan.DeleteAsync();
                     }
                 }
 
                 var controlChan = dayCat.GetChannelByName(ChannelHelper.MakeTextChannelName(tdesc.ControlChannelName));
-                if(controlChan != null && controlChan.IsText)
+                if (controlChan != null && controlChan.IsText)
                 {
-                    if(success && dayCat.Channels.Count == 1)
+                    if (success && dayCat.Channels.Count == 1)
                     {
                         await controlChan.DeleteAsync();
                     }
@@ -250,7 +251,7 @@ namespace Bot.Core
                     }
                 }
 
-                if(dayCat.Channels.Count == 0)
+                if (dayCat.Channels.Count == 0)
                 {
                     await dayCat.DeleteAsync();
                 }
@@ -266,10 +267,10 @@ namespace Bot.Core
             }
 
             // Don't try to remove roles if we had an issue with something else - we might need them to see channels that didn't delete!
-            if(success)
+            if (success)
             {
                 var gameVillager = guild.GetRoleByName(tdesc.VillagerRoleName);
-                if(gameVillager != null)
+                if (gameVillager != null)
                 {
                     await gameVillager.DeleteAsync();
                 }
@@ -279,7 +280,7 @@ namespace Bot.Core
                 }
 
                 var gameStoryteller = guild.GetRoleByName(tdesc.StorytellerRoleName);
-                if( gameStoryteller != null)
+                if (gameStoryteller != null)
                 {
                     await gameStoryteller.DeleteAsync();
                 }
@@ -290,29 +291,29 @@ namespace Bot.Core
             }
 
             var message = $"Town **{townName}** has been destroyed.";
-            if(!success)
+            if (!success)
             {
                 message = $"I destroyed what I knew about for Town **{townName}**.";
-                if(notDeletedUnfamiliar.Count > 0)
+                if (notDeletedUnfamiliar.Count > 0)
                 {
                     message += "\n\nI did not destroy some things I was unfamiliar with:";
-                    foreach(var s in notDeletedUnfamiliar)
+                    foreach (var s in notDeletedUnfamiliar)
                     {
                         message += "\n * " + s;
                     }
                     message += "\n\nYou can destroy them manually and run this command again.\n";
                 }
-                if(notDeleted.Count > 0)
+                if (notDeleted.Count > 0)
                 {
                     message += "\nI did not destroy these things yet, just in case you still need them:";
-                    foreach(var s in notDeleted)
+                    foreach (var s in notDeleted)
                     {
                         message += "\n * " + s;
                     }
                 }
             }
 
-            if(success)
+            if (success)
             {
                 var townRec = await m_townDb.GetTownRecordByNameAsync(guild.Id, townName);
                 if (townRec != null)
@@ -325,7 +326,7 @@ namespace Bot.Core
 
             return InteractionResult.FromMessage(message);
         }
-        
+
         private IEmbed EmbedFromTown(ITown town, DateTime timestamp, string authorName)
         {
             var u = "Unknown";
@@ -483,6 +484,57 @@ namespace Bot.Core
             return newTown;
         }
 
+        public Task PlayerCountAsync(IBotInteractionContext ctx) =>
+    m_interactionWrapper.WrapInteractionAsync("Looking up player count...", ctx,
+        l => PerformPlayerCount(l, ctx));
+
+        private async Task<InteractionResult> PerformPlayerCount(IProcessLogger _, IBotInteractionContext ctx)
+        {
+            var townRecord = await m_townDb.GetTownRecordAsync(ctx.Guild.Id, ctx.Channel.Id);
+            ulong villagerRoleId = townRecord?.VillagerRoleId ?? 0;
+
+            int playerCount = 0;
+
+            if (villagerRoleId != 0)
+            {
+                playerCount = ctx.Guild.Members.Values.Count(member => !member.IsBot && member.Roles.Any(role => role.Id == villagerRoleId));
+            }
+
+            int[] players = { 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
+            int[] townsfolk = { 3, 3, 5, 5, 5, 7, 7, 7, 9, 9, 9 };
+            int[] outsiders = { 0, 1, 0, 1, 2, 0, 1, 2, 0, 1, 2 };
+            int[] minions = { 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3 };
+            int[] demons = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+
+            string yellow = "\x1b[93m";
+            string blue = "\x1b[34m";
+            string red = "\x1b[31m";
+            string reset = "\u001b[0m";
+
+            if (playerCount < 5)
+            {
+                string chart =
+                    $"{yellow}Players:     {string.Join("", players.Select(p => (p == 15 ? "15+" : p.ToString()) + (p < 10 ? "   " : "  ")))}{reset}\n" +
+                    $"{blue}Townsfolk:   {string.Join("   ", townsfolk)}{reset}\n" +
+                    $"{blue}Outsiders:   {string.Join("   ", outsiders)}{reset}\n" +
+                    $"{red}Minions:     {string.Join("   ", minions)}{reset}\n" +
+                    $"{red}Demons:      {string.Join("   ", demons)}{reset}";
+
+                return InteractionResult.FromMessage($"**Player Count**\n```ansi\n{chart}\n```");
+            }
+
+            int index = Math.Min(playerCount, 15) - 5;
+            string playerLabel = playerCount >= 15 ? "15+" : playerCount.ToString();
+
+            string result =
+                $"{yellow}Players: {playerLabel}{reset}\n" +
+                $"{blue}Townsfolk: {townsfolk[index]}{reset}\n" +
+                $"{blue}Outsiders: {outsiders[index]}{reset}\n" +
+                $"{red}Minions: {minions[index]}{reset}\n" +
+                $"{red}Demons: {demons[index]}{reset}";
+
+            return InteractionResult.FromMessage($"```ansi\n{result}\n```");
+        }
     }
 
     public class CreateTownException : Exception

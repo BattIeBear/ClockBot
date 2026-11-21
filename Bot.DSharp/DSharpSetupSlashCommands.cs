@@ -144,5 +144,11 @@ namespace Bot.DSharp
 
             await BotSetup!.RemoveTownAsync(new DSharpInteractionContext(ctx), dayCatWrapped);
         }
+
+        [SlashCommand("playercount", "Show the player count chart for this town")]
+        public Task PlayerCountCommand(InteractionContext ctx)
+        {
+            return BotSetup!.PlayerCountAsync(new DSharpInteractionContext(ctx, true));
+        }
     }
 }
