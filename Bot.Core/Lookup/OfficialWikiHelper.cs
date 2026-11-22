@@ -7,6 +7,10 @@ namespace Bot.Core.Lookup
     {
         public const string WikiPrefixUrl = "https://wiki.bloodontheclocktower.com/";
 
-        public static string GetWikiUrl(string thingName) => $"{WikiPrefixUrl}{Uri.EscapeUriString(string.Join('_', thingName.Split(' ').Select(s => $"{char.ToUpper(s[0])}{s[1..]}")))}";
+        public static string GetWikiUrl(string thingName)
+        {
+            string pageName = string.Join('_', thingName.Split(' ').Select(s => $"{char.ToUpper(s[0])}{s[1..]}"));
+            return $"{WikiPrefixUrl}{Uri.EscapeDataString(pageName)}";
+        }
     }
 }

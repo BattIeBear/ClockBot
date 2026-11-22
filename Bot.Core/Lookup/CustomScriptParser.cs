@@ -19,8 +19,11 @@ namespace Bot.Core.Lookup
             {
                 return EmptyResult;
             }
+
             if (arr == null)
+            {
                 return EmptyResult;
+            }
 
             List<CharacterData> characters = new();
             ScriptData? scriptData = null;
@@ -28,20 +31,30 @@ namespace Bot.Core.Lookup
             foreach (var item in arr)
             {
                 if (item is not JObject obj)
+                {
                     continue;
+                }
 
                 CharacterData? cd = null;
                 if (JsonParseUtil.GetObjectStringProp(obj, "id") == "_meta")
+                {
                     scriptData = ParseScriptMetaData(obj);
+                }
                 else
-                    cd = JsonParseUtil.ParseCharacterData(obj, isOfficial:false);
+                {
+                    cd = JsonParseUtil.ParseCharacterData(obj, isOfficial: false);
+                }
 
                 if (cd != null)
+                {
                     characters.Add(cd);
+                }
             }
 
             if (scriptData == null)
+            {
                 return EmptyResult;
+            }
 
             return new GetCustomScriptResult(new[] { new ScriptWithCharacters(scriptData, characters) });
         }
@@ -50,14 +63,21 @@ namespace Bot.Core.Lookup
         {
             string? name = JsonParseUtil.GetObjectStringProp(obj, "name");
             if (string.IsNullOrWhiteSpace(name))
+            {
                 return null;
+            }
 
             ScriptData sd = new(name, isOfficial: false);
 
             var almanacUrl = JsonParseUtil.GetObjectStringProp(obj, "almanac");
+
             if (almanacUrl != null)
-                sd.AlmanacUrl = Uri.EscapeUriString(almanacUrl);
+            {
+                sd.AlmanacUrl = JsonParseUtil.EscapeUri(almanacUrl);
+            }
+
             sd.Author = JsonParseUtil.GetObjectStringProp(obj, "author");
+
             return sd;
         }
     }
