@@ -506,9 +506,15 @@ namespace Bot.Core
             int[] minions = { 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3 };
             int[] demons = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
 
+            //ANSI Color Codes https://xscript.net/ansi-color-codes
+
             string purple = "\x1b[95m";
             string blue = "\x1b[34m";
+            string cyan = "\x1b[96m";
+            string orange = "\x1b[93m";
             string red = "\x1b[31m";
+            string alive = "\x1b[92m";
+            string dead = "\x1b[97m";
             string reset = "\u001b[0m";
 
             if (playerCount < 5)
@@ -516,8 +522,8 @@ namespace Bot.Core
                 string chart =
                     $"{purple}Players:     {string.Join("", players.Select((p, i) => (p == 15 ? "15+" : p.ToString()) + (i < players.Count() - 1 ? (p < 10 ? " | " : "| ") : "")))}{reset}\n" +
                     $"{blue}Townsfolk:   {string.Join(" | ", townsfolk)}{reset}\n" +
-                    $"{blue}Outsiders:   {string.Join(" | ", outsiders)}{reset}\n" +
-                    $"{red}Minions:     {string.Join(" | ", minions)}{reset}\n" +
+                    $"{cyan}Outsiders:   {string.Join(" | ", outsiders)}{reset}\n" +
+                    $"{orange}Minions:     {string.Join(" | ", minions)}{reset}\n" +
                     $"{red}Demons:      {string.Join(" | ", demons)}{reset}";
 
                 return InteractionResult.FromMessage($"**Player Count**\n```ansi\n{chart}\n```");
@@ -529,9 +535,11 @@ namespace Bot.Core
             string result =
                 $"{purple}Players: {playerLabel}{reset}\n" +
                 $"{blue}Townsfolk: {townsfolk[index]}{reset}\n" +
-                $"{blue}Outsiders: {outsiders[index]}{reset}\n" +
-                $"{red}Minions: {minions[index]}{reset}\n" +
-                $"{red}Demons: {demons[index]}{reset}";
+                $"{cyan}Outsiders: {outsiders[index]}{reset}\n" +
+                $"{orange}Minions: {minions[index]}{reset}\n" +
+                $"{red}Demons: {demons[index]}{reset}\n\n" +
+                $"{alive}Alive: {reset}\n" +
+                $"{dead}Dead: {reset}";
 
             return InteractionResult.FromMessage($"```ansi\n{result}\n```");
         }
