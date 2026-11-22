@@ -16,17 +16,27 @@ namespace Bot.DSharp
         }
 
         [SlashCommand("addScript", "Add a script json URL for later lookup")]
-        public Task AddScriptCommand(InteractionContext ctx,
+        public async Task AddScriptCommand(InteractionContext ctx,
             [Option("scriptJsonUrl", "URL pointing at a json file for the script")]string scriptJsonUrl)
         {
-            return BotLookup!.AddScriptAsync(new DSharpInteractionContext(ctx), scriptJsonUrl);
+            if (!await DSharpCommandPermissions.RequireAdministratorAsync(ctx))
+            {
+                return;
+            }
+
+            await BotLookup!.AddScriptAsync(new DSharpInteractionContext(ctx), scriptJsonUrl);
         }
 
         [SlashCommand("removeScript", "Remove script json URL previously added")]
-        public Task RemoveScriptCommand(InteractionContext ctx,
+        public async Task RemoveScriptCommand(InteractionContext ctx,
             [Option("scriptJsonUrl", "URL pointing at a json file for the script")]string scriptJsonUrl)
         {
-            return BotLookup!.RemoveScriptAsync(new DSharpInteractionContext(ctx), scriptJsonUrl);
+            if (!await DSharpCommandPermissions.RequireAdministratorAsync(ctx))
+            {
+                return;
+            }
+
+            await BotLookup!.RemoveScriptAsync(new DSharpInteractionContext(ctx), scriptJsonUrl);
         }
 
         [SlashCommand("listScripts", "List script json URLs added to this server")]
@@ -36,9 +46,14 @@ namespace Bot.DSharp
         }
 
         [SlashCommand("refreshScripts", "Refresh scripts registered for this server")]
-        public Task LookupCommand(InteractionContext ctx)
+        public async Task RefreshScriptsCommand(InteractionContext ctx)
         {
-            return BotLookup!.RefreshScriptsAsync(new DSharpInteractionContext(ctx));
+            if (!await DSharpCommandPermissions.RequireAdministratorAsync(ctx))
+            {
+                return;
+            }
+
+            await BotLookup!.RefreshScriptsAsync(new DSharpInteractionContext(ctx));
         }
     }
 }

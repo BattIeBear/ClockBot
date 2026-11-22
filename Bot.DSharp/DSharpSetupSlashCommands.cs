@@ -20,6 +20,10 @@ namespace Bot.DSharp
             [Option("storytellerRole", "Server Storyteller Role - only they can see control channels")] DiscordRole? stRole = null,
             [Option("useNight", "If true, a Night category full of cottages will be created")] bool useNight = true)
         {
+            if (!await DSharpCommandPermissions.RequireAdministratorAsync(ctx))
+            {
+                return;
+            }
             var wrappedPlayerRole = playerRole == null ? null : new DSharpRole(playerRole);
             var wrappedStRole = stRole == null ? null : new DSharpRole(stRole);
 
@@ -29,6 +33,11 @@ namespace Bot.DSharp
         [SlashCommand("townInfo", "Get info about any town registered for this server & channel")]
         public async Task TownInfoCommand(InteractionContext ctx)
         {
+            if (!await DSharpCommandPermissions.RequireStorytellerOrAdministratorAsync(ctx))
+            {
+                return;
+            }
+
             await BotSetup!.TownInfoAsync(new DSharpInteractionContext(ctx));
         }
 
@@ -36,6 +45,11 @@ namespace Bot.DSharp
         public async Task DestroyTownCommand(InteractionContext ctx,
             [Option("townName", "Town Name")] string townName)
         {
+            if (!await DSharpCommandPermissions.RequireAdministratorAsync(ctx))
+            {
+                return;
+            }
+
             await BotSetup!.DestroyTownAsync(new DSharpInteractionContext(ctx), townName);
         }
 
@@ -44,6 +58,10 @@ namespace Bot.DSharp
             [Option("chatChannel", "Set the (text) chat channel for this town")] DiscordChannel? chatChannel = null,
             [Option("nightCategory", "Set the Night category for this town")] DiscordChannel? nightCat = null)
         {
+            if (!await DSharpCommandPermissions.RequireAdministratorAsync(ctx))
+            {
+                return;
+            }
             // Need to do error handling here at the argument level before we try to create wrappers for stuff that's
             // totally the wrong type
             List<string> errors = new();
@@ -75,6 +93,10 @@ namespace Bot.DSharp
             [Option("chatChannel", "Chat channel (optional, must be text)")] DiscordChannel? chatChannel = null
             )
         {
+            if (!await DSharpCommandPermissions.RequireAdministratorAsync(ctx))
+            {
+                return;
+            }
             // Need to do error handling here at the argument level before we try to create wrappers for stuff that's
             // totally the wrong type
             List<string> errors = new();
@@ -135,6 +157,11 @@ namespace Bot.DSharp
         public async Task RemoveTownCommand(InteractionContext ctx,
             [Option("dayCategory", "Town to remove - if blank, must be run from the town's control channel")] DiscordChannel? dayCat = null)
         {
+            if (!await DSharpCommandPermissions.RequireAdministratorAsync(ctx))
+            {
+                return;
+            }
+
             if (dayCat != null && dayCat.Type != DSharpPlus.ChannelType.Category)
             {
                 await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"**Error:** Channel `{dayCat.Name}` isn't a category!"));

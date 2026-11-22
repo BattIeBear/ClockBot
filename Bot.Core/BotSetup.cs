@@ -514,11 +514,11 @@ namespace Bot.Core
             if (playerCount < 5)
             {
                 string chart =
-    $"{purple}Players:     {string.Join("", players.Select((p, i) => (p == 15 ? "15+" : p.ToString()) + (i < players.Count() - 1 ? (p < 10 ? " | " : "| ") : "")))}{reset}\n" +
-    $"{blue}Townsfolk:   {string.Join(" | ", townsfolk)}{reset}\n" +
-    $"{blue}Outsiders:   {string.Join(" | ", outsiders)}{reset}\n" +
-    $"{red}Minions:     {string.Join(" | ", minions)}{reset}\n" +
-    $"{red}Demons:      {string.Join(" | ", demons)}{reset}";
+                    $"{purple}Players:     {string.Join("", players.Select((p, i) => (p == 15 ? "15+" : p.ToString()) + (i < players.Count() - 1 ? (p < 10 ? " | " : "| ") : "")))}{reset}\n" +
+                    $"{blue}Townsfolk:   {string.Join(" | ", townsfolk)}{reset}\n" +
+                    $"{blue}Outsiders:   {string.Join(" | ", outsiders)}{reset}\n" +
+                    $"{red}Minions:     {string.Join(" | ", minions)}{reset}\n" +
+                    $"{red}Demons:      {string.Join(" | ", demons)}{reset}";
 
                 return InteractionResult.FromMessage($"**Player Count**\n```ansi\n{chart}\n```");
             }
