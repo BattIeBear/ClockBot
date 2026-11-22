@@ -12,7 +12,7 @@ namespace Bot.DSharp
         public Task LookupCommand(InteractionContext ctx,
             [Option("lookupString", "Role you want to look up")]string lookupString)
         {
-            return BotLookup!.LookupAsync(new DSharpInteractionContext(ctx, true), lookupString);
+            return BotLookup!.LookupAsync(new DSharpInteractionContext(ctx), lookupString);
         }
 
         [SlashCommand("addScript", "Add a script json URL for later lookup")]

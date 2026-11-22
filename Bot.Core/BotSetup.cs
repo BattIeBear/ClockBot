@@ -506,7 +506,7 @@ namespace Bot.Core
             int[] minions = { 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3 };
             int[] demons = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
 
-            string yellow = "\x1b[93m";
+            string purple = "\x1b[95m";
             string blue = "\x1b[34m";
             string red = "\x1b[31m";
             string reset = "\u001b[0m";
@@ -514,11 +514,11 @@ namespace Bot.Core
             if (playerCount < 5)
             {
                 string chart =
-                    $"{yellow}Players:     {string.Join("", players.Select(p => (p == 15 ? "15+" : p.ToString()) + (p < 10 ? "   " : "  ")))}{reset}\n" +
-                    $"{blue}Townsfolk:   {string.Join("   ", townsfolk)}{reset}\n" +
-                    $"{blue}Outsiders:   {string.Join("   ", outsiders)}{reset}\n" +
-                    $"{red}Minions:     {string.Join("   ", minions)}{reset}\n" +
-                    $"{red}Demons:      {string.Join("   ", demons)}{reset}";
+    $"{purple}Players:     {string.Join("", players.Select((p, i) => (p == 15 ? "15+" : p.ToString()) + (i < players.Count() - 1 ? (p < 10 ? " | " : "| ") : "")))}{reset}\n" +
+    $"{blue}Townsfolk:   {string.Join(" | ", townsfolk)}{reset}\n" +
+    $"{blue}Outsiders:   {string.Join(" | ", outsiders)}{reset}\n" +
+    $"{red}Minions:     {string.Join(" | ", minions)}{reset}\n" +
+    $"{red}Demons:      {string.Join(" | ", demons)}{reset}";
 
                 return InteractionResult.FromMessage($"**Player Count**\n```ansi\n{chart}\n```");
             }
@@ -527,7 +527,7 @@ namespace Bot.Core
             string playerLabel = playerCount >= 15 ? "15+" : playerCount.ToString();
 
             string result =
-                $"{yellow}Players: {playerLabel}{reset}\n" +
+                $"{purple}Players: {playerLabel}{reset}\n" +
                 $"{blue}Townsfolk: {townsfolk[index]}{reset}\n" +
                 $"{blue}Outsiders: {outsiders[index]}{reset}\n" +
                 $"{red}Minions: {minions[index]}{reset}\n" +

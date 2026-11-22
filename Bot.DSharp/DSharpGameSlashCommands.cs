@@ -14,9 +14,6 @@ namespace Bot.DSharp
     {
         public IBotGameplayInteractionHandler? BotGameplayHandler { get; set; }
 
-        [SlashCommand("game", "Starts up a game of Blood on the Clocktower")]
-        public Task GameCommand(InteractionContext ctx) => BotGameplayHandler!.CommandGameAsync(new DSharpInteractionContext(ctx));
-
         [SlashCommand("night", "Move all active players from Town Square into Cottages for the night")]
         public Task NightCommand(InteractionContext ctx) => BotGameplayHandler!.CommandNightAsync(new DSharpInteractionContext(ctx));
 

@@ -15,7 +15,7 @@ namespace Bot.DSharp
         private readonly DSharpMember m_member;
         private readonly bool m_ephemeral;
 
-        public DSharpInteractionContext(InteractionContext wrapped, bool ephemeral = false)
+        public DSharpInteractionContext(InteractionContext wrapped, bool ephemeral = true)
             :base(wrapped)
         {
             m_guild = new DSharpGuild(Wrapped.Guild);
