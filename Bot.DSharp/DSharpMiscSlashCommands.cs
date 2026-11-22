@@ -1,6 +1,8 @@
 ﻿using Bot.Api;
 using DSharpPlus.Commands;
+using DSharpPlus.Commands.ContextChecks;
 using DSharpPlus.Commands.Processors.SlashCommands;
+using DSharpPlus.Entities;
 using System.ComponentModel;
 using System.Threading.Tasks;
 
@@ -16,6 +18,7 @@ namespace Bot.DSharp
         }
 
         [Command("announce")]
+        [RequirePermissions(DiscordPermission.Administrator)]
         [Description("Set whether this server wants to hear new version announcements")]
         public async Task AnnounceCommand(
             SlashCommandContext ctx,

@@ -1,5 +1,4 @@
-﻿
-using Bot.Api;
+﻿using Bot.Api;
 using DSharpPlus.Commands;
 using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;

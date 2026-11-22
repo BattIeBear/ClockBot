@@ -1,6 +1,9 @@
-﻿using Bot.Api;
+﻿
+using Bot.Api;
 using DSharpPlus.Commands;
+using DSharpPlus.Commands.ContextChecks;
 using DSharpPlus.Commands.Processors.SlashCommands;
+using DSharpPlus.Entities;
 using System.ComponentModel;
 using System.Threading.Tasks;
 
@@ -25,6 +28,7 @@ namespace Bot.DSharp
         }
 
         [Command("addscript")]
+        [RequirePermissions(DiscordPermission.Administrator)]
         [Description("Add a script json URL for later lookup")]
         public async Task AddScriptCommand(
             SlashCommandContext ctx,
@@ -39,6 +43,7 @@ namespace Bot.DSharp
         }
 
         [Command("removescript")]
+        [RequirePermissions(DiscordPermission.Administrator)]
         [Description("Remove script json URL previously added")]
         public async Task RemoveScriptCommand(
             SlashCommandContext ctx,
@@ -60,6 +65,7 @@ namespace Bot.DSharp
         }
 
         [Command("refreshscripts")]
+        [RequirePermissions(DiscordPermission.Administrator)]
         [Description("Refresh scripts registered for this server")]
         public async Task RefreshScriptsCommand(SlashCommandContext ctx)
         {

@@ -1,5 +1,7 @@
-﻿using Bot.Api;
+﻿
+using Bot.Api;
 using DSharpPlus.Commands;
+using DSharpPlus.Commands.ContextChecks;
 using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
 using System;
@@ -20,6 +22,7 @@ namespace Bot.DSharp
         }
 
         [Command("createtown")]
+        [RequirePermissions(DiscordPermission.Administrator)]
         [Description("Create a new Town on this server")]
         public async Task CreateTownCommand(SlashCommandContext ctx,
             [Description("Town Name")] string townName,
@@ -51,6 +54,7 @@ namespace Bot.DSharp
         }
 
         [Command("destroytown")]
+        [RequirePermissions(DiscordPermission.Administrator)]
         [Description("Destroy any channels and roles created by /createtown for the town with the given name")]
         public async Task DestroyTownCommand(SlashCommandContext ctx,
             [Description("Town Name")] string townName)
@@ -64,6 +68,7 @@ namespace Bot.DSharp
         }
 
         [Command("modifytown")]
+        [RequirePermissions(DiscordPermission.Administrator)]
         [Description("Modify one of the optional details of a town")]
         public async Task ModifyTownCommand(SlashCommandContext ctx,
             [Description("Set the text chat channel for this town")] DiscordChannel? chatChannel = null,
@@ -99,6 +104,7 @@ namespace Bot.DSharp
         }
 
         [Command("addtown")]
+        [RequirePermissions(DiscordPermission.Administrator)]
         [Description("Add a new town composed of existing channels and roles on this server")]
         public async Task AddTownCommand(SlashCommandContext ctx,
             [Description("Control channel (must be text)")] DiscordChannel controlChannel,
@@ -176,6 +182,7 @@ namespace Bot.DSharp
         }
 
         [Command("removetown")]
+        [RequirePermissions(DiscordPermission.Administrator)]
         [Description("Unregister a town on this server without deleting any channels or roles")]
         public async Task RemoveTownCommand(SlashCommandContext ctx,
             [Description("Town to remove - if blank, must be run from the town's control channel")] DiscordChannel? dayCat = null)
