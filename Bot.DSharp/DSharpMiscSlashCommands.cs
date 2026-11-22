@@ -1,27 +1,32 @@
 ﻿using Bot.Api;
-using DSharpPlus.SlashCommands;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using DSharpPlus.Commands;
+using DSharpPlus.Commands.Processors.SlashCommands;
+using System.ComponentModel;
 using System.Threading.Tasks;
 
 namespace Bot.DSharp
 {
-    internal class DSharpMiscSlashCommands : ApplicationCommandModule
+    public class DSharpMiscSlashCommands
     {
-        public IAnnouncer? Announcer { get; set; }
+        private readonly IAnnouncer m_announcer;
 
-        [SlashCommand("announce", "Set whether this server wants to hear new version announcements")]
-        public async Task AnnounceCommand(InteractionContext ctx, 
-            [Option("hearAnnouncements", "If true, this server will hear new version announcements")] bool hear)
+        public DSharpMiscSlashCommands(IAnnouncer announcer)
+        {
+            m_announcer = announcer;
+        }
+
+        [Command("announce")]
+        [Description("Set whether this server wants to hear new version announcements")]
+        public async Task AnnounceCommand(
+            SlashCommandContext ctx,
+            [Description("If true, this server will hear new version announcements")] bool hear)
         {
             if (!await DSharpCommandPermissions.RequireAdministratorAsync(ctx))
             {
                 return;
             }
 
-            await Announcer!.CommandSetGuildAnnounce(new DSharpInteractionContext(ctx), hear);
+            await m_announcer.CommandSetGuildAnnounce(new DSharpInteractionContext(ctx), hear);
         }
     }
 }

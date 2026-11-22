@@ -4,15 +4,14 @@ namespace Bot.DSharp
 {
     public interface IDiscordClientFactory
     {
-        IDiscordClient CreateClient(DiscordConfiguration config);
+        IDiscordClient CreateClient(DiscordClientBuilder builder);
     }
 
     public class DiscordClientFactory : IDiscordClientFactory
     {
-        public IDiscordClient CreateClient(DiscordConfiguration config)
+        public IDiscordClient CreateClient(DiscordClientBuilder builder)
         {
-            var client = new DiscordShardedClient(config);
-            return new DiscordClientWrapper(client);
+            return new DiscordClientWrapper(builder.Build());
         }
     }
 }

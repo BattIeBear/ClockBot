@@ -20,8 +20,8 @@ namespace Bot.DSharp
 
 		public int Position => Wrapped.Position;
 
-		public bool IsVoice => Wrapped.Type == ChannelType.Voice;
-		public bool IsText => Wrapped.Type == ChannelType.Text;
+		public bool IsVoice => Wrapped.Type == DiscordChannelType.Voice;
+		public bool IsText => Wrapped.Type == DiscordChannelType.Text;
 
 		public string Name => Wrapped.Name;
 
@@ -98,7 +98,7 @@ namespace Bot.DSharp
 			var overwritesToRemove = new HashSet<DiscordOverwrite>();
 			var allIds = memberPool.Select(m => m.Id).ToHashSet();
 
-			var relevantOverwrites = Wrapped.PermissionOverwrites.Where(o => o.Type == OverwriteType.Member);
+			var relevantOverwrites = Wrapped.PermissionOverwrites.Where(o => o.Type == DiscordOverwriteType.Member);
 
 			foreach (var o in relevantOverwrites)
 			{

@@ -1,143 +1,165 @@
 ﻿using Bot.Api;
+using DSharpPlus.Commands;
+using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
-using DSharpPlus.SlashCommands;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Bot.DSharp
 {
-    internal class DSharpSetupSlashCommands : ApplicationCommandModule
+    public class DSharpSetupSlashCommands
     {
-        public IBotSetup? BotSetup { get; set; }
+        private readonly IBotSetup m_botSetup;
 
-        [SlashCommand("createTown", "Create a new Town on this server")]
-        public async Task CreateTownCommand(InteractionContext ctx,
-            [Option("townName", "Town Name")] string townName,
-            [Option("playerRole", "Server Player Role - only they can see the town")] DiscordRole? playerRole = null,
-            [Option("storytellerRole", "Server Storyteller Role - only they can see control channels")] DiscordRole? stRole = null,
-            [Option("useNight", "If true, a Night category full of cottages will be created")] bool useNight = true)
+        public DSharpSetupSlashCommands(IBotSetup botSetup)
+        {
+            m_botSetup = botSetup;
+        }
+
+        [Command("createtown")]
+        [Description("Create a new Town on this server")]
+        public async Task CreateTownCommand(SlashCommandContext ctx,
+            [Description("Town Name")] string townName,
+            [Description("Server Player Role - only they can see the town")] DiscordRole? playerRole = null,
+            [Description("Server Storyteller Role - only they can see control channels")] DiscordRole? stRole = null,
+            [Description("If true, a Night category full of cottages will be created")] bool useNight = true)
         {
             if (!await DSharpCommandPermissions.RequireAdministratorAsync(ctx))
             {
                 return;
             }
+
             var wrappedPlayerRole = playerRole == null ? null : new DSharpRole(playerRole);
             var wrappedStRole = stRole == null ? null : new DSharpRole(stRole);
 
-            await BotSetup!.CreateTownAsync(new DSharpInteractionContext(ctx), townName, wrappedPlayerRole, wrappedStRole, useNight);
+            await m_botSetup.CreateTownAsync(new DSharpInteractionContext(ctx), townName, wrappedPlayerRole, wrappedStRole, useNight);
         }
 
-        [SlashCommand("townInfo", "Get info about any town registered for this server & channel")]
-        public async Task TownInfoCommand(InteractionContext ctx)
+        [Command("towninfo")]
+        [Description("Get info about any town registered for this server and channel")]
+        public async Task TownInfoCommand(SlashCommandContext ctx)
         {
             if (!await DSharpCommandPermissions.RequireStorytellerOrAdministratorAsync(ctx))
             {
                 return;
             }
 
-            await BotSetup!.TownInfoAsync(new DSharpInteractionContext(ctx));
+            await m_botSetup.TownInfoAsync(new DSharpInteractionContext(ctx));
         }
 
-        [SlashCommand("destroyTown", "Destroy any channels and roles created by /createtown for the town with the given name")]
-        public async Task DestroyTownCommand(InteractionContext ctx,
-            [Option("townName", "Town Name")] string townName)
+        [Command("destroytown")]
+        [Description("Destroy any channels and roles created by /createtown for the town with the given name")]
+        public async Task DestroyTownCommand(SlashCommandContext ctx,
+            [Description("Town Name")] string townName)
         {
             if (!await DSharpCommandPermissions.RequireAdministratorAsync(ctx))
             {
                 return;
             }
 
-            await BotSetup!.DestroyTownAsync(new DSharpInteractionContext(ctx), townName);
+            await m_botSetup.DestroyTownAsync(new DSharpInteractionContext(ctx), townName);
         }
 
-        [SlashCommand("modifyTown", "Modify one of the optional details of a town")]
-        public async Task ModifyTownCommand(InteractionContext ctx,
-            [Option("chatChannel", "Set the (text) chat channel for this town")] DiscordChannel? chatChannel = null,
-            [Option("nightCategory", "Set the Night category for this town")] DiscordChannel? nightCat = null)
+        [Command("modifytown")]
+        [Description("Modify one of the optional details of a town")]
+        public async Task ModifyTownCommand(SlashCommandContext ctx,
+            [Description("Set the text chat channel for this town")] DiscordChannel? chatChannel = null,
+            [Description("Set the Night category for this town")] DiscordChannel? nightCat = null)
         {
             if (!await DSharpCommandPermissions.RequireAdministratorAsync(ctx))
             {
                 return;
             }
-            // Need to do error handling here at the argument level before we try to create wrappers for stuff that's
-            // totally the wrong type
+
             List<string> errors = new();
 
-            if(chatChannel != null && chatChannel.Type != DSharpPlus.ChannelType.Text)
+            if (chatChannel != null && chatChannel.Type != DiscordChannelType.Text)
             {
                 errors.Add($"- Chat channel `{chatChannel.Name}` is not a text channel!");
             }
-            if(nightCat != null && nightCat.Type != DSharpPlus.ChannelType.Category)
+
+            if (nightCat != null && nightCat.Type != DiscordChannelType.Category)
             {
                 errors.Add($"- Night category `{nightCat.Name}` is not a category!");
+            }
+
+            if (errors.Count > 0)
+            {
+                await ctx.RespondAsync("Couldn't modify the town due to the following errors:\n" + string.Join("\n", errors), true);
+                return;
             }
 
             var chatChanWrapped = chatChannel == null ? null : new DSharpChannel(chatChannel);
             var nightCatWrapped = nightCat == null ? null : new DSharpChannelCategory(nightCat);
 
-            await BotSetup!.ModifyTownAsync(new DSharpInteractionContext(ctx), chatChanWrapped, nightCatWrapped);
+            await m_botSetup.ModifyTownAsync(new DSharpInteractionContext(ctx), chatChanWrapped, nightCatWrapped);
         }
 
-
-        [SlashCommand("addTown", "Add a new town composed of existing channel and roles on this server")]
-        public async Task AddTownCommand(InteractionContext ctx,
-            [Option("controlChannel", "Control channel (must be text)")] DiscordChannel controlChannel,
-            [Option("townSquare", "Town Square channel (must be voice)")] DiscordChannel townSquare,
-            [Option("dayCategory", "Day Category (must contain control and town square channels)")] DiscordChannel dayCategory,
-            [Option("storytellerRole", "Role to grant storytellers in this town during an active game")] DiscordRole stRole,
-            [Option("villagerRole", "Role to grant villagers in this town during an active game")] DiscordRole villagerRole,
-            [Option("nightCategory", "Night Category (optional)")] DiscordChannel? nightCategory = null,
-            [Option("chatChannel", "Chat channel (optional, must be text)")] DiscordChannel? chatChannel = null
-            )
+        [Command("addtown")]
+        [Description("Add a new town composed of existing channels and roles on this server")]
+        public async Task AddTownCommand(SlashCommandContext ctx,
+            [Description("Control channel (must be text)")] DiscordChannel controlChannel,
+            [Description("Town Square channel (must be voice)")] DiscordChannel townSquare,
+            [Description("Day Category (must contain control and town square channels)")] DiscordChannel dayCategory,
+            [Description("Role to grant storytellers in this town during an active game")] DiscordRole stRole,
+            [Description("Role to grant villagers in this town during an active game")] DiscordRole villagerRole,
+            [Description("Night Category (optional)")] DiscordChannel? nightCategory = null,
+            [Description("Chat channel (optional, must be text)")] DiscordChannel? chatChannel = null)
         {
             if (!await DSharpCommandPermissions.RequireAdministratorAsync(ctx))
             {
                 return;
             }
-            // Need to do error handling here at the argument level before we try to create wrappers for stuff that's
-            // totally the wrong type
+
             List<string> errors = new();
 
-            if (controlChannel.Type != DSharpPlus.ChannelType.Text)
+            if (controlChannel.Type != DiscordChannelType.Text)
             {
                 errors.Add($"- Control channel `{controlChannel.Name}` is not a text channel!");
             }
-            if (dayCategory.Type != DSharpPlus.ChannelType.Category)
+
+            if (dayCategory.Type != DiscordChannelType.Category)
             {
                 errors.Add($"- Day category `{dayCategory.Name}` is not a category!");
             }
-            if (townSquare.Type != DSharpPlus.ChannelType.Voice)
+
+            if (townSquare.Type != DiscordChannelType.Voice)
             {
                 errors.Add($"- Town Square channel `{townSquare.Name}` is not a voice channel!");
             }
-            if (dayCategory.Type == DSharpPlus.ChannelType.Category && !dayCategory.Children.Contains(controlChannel))
+
+            if (dayCategory.Type == DiscordChannelType.Category && !dayCategory.Children.Contains(controlChannel))
             {
                 errors.Add($"- Control channel `{controlChannel.Name}` is not in the **{dayCategory.Name}** category!");
             }
-            if (dayCategory.Type == DSharpPlus.ChannelType.Category && !dayCategory.Children.Contains(townSquare))
+
+            if (dayCategory.Type == DiscordChannelType.Category && !dayCategory.Children.Contains(townSquare))
             {
                 errors.Add($"- Town Square channel `{townSquare.Name}` is not in the **{dayCategory.Name}** category!");
             }
-            if(nightCategory != null && nightCategory.Type != DSharpPlus.ChannelType.Category)
+
+            if (nightCategory != null && nightCategory.Type != DiscordChannelType.Category)
             {
                 errors.Add($"- Night category `{nightCategory.Name}` is not a category!");
             }
-            if(chatChannel != null && chatChannel.Type != DSharpPlus.ChannelType.Text)
+
+            if (chatChannel != null && chatChannel.Type != DiscordChannelType.Text)
             {
                 errors.Add($"- Chat channel `{chatChannel.Name}` is not a text channel!");
             }
-            if(chatChannel != null && dayCategory.Type == DSharpPlus.ChannelType.Category && !dayCategory.Children.Contains(chatChannel))
+
+            if (chatChannel != null && dayCategory.Type == DiscordChannelType.Category && !dayCategory.Children.Contains(chatChannel))
             {
                 errors.Add($"- Chat channel `{chatChannel.Name}` is not in the **{dayCategory.Name}** category!");
             }
 
-            if(errors.Count > 0)
+            if (errors.Count > 0)
             {
                 string msg = "Couldn't add a town due to the following errors:\n" + string.Join("\n", errors);
-                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent(msg));
+                await ctx.RespondAsync(msg, true);
                 return;
             }
 
@@ -150,32 +172,35 @@ namespace Bot.DSharp
             var villagerRoleWrapped = new DSharpRole(villagerRole);
             var chatChan = chatChannel == null ? null : new DSharpChannel(chatChannel);
 
-            await BotSetup!.AddTownAsync(new DSharpInteractionContext(ctx), controlChan, townChan, dayCat, nightCat, stRoleWrapped, villagerRoleWrapped, chatChan);
+            await m_botSetup.AddTownAsync(new DSharpInteractionContext(ctx), controlChan, townChan, dayCat, nightCat, stRoleWrapped, villagerRoleWrapped, chatChan);
         }
 
-        [SlashCommand("removeTown", "Unregister a town on this server without deleting any channels or roles")]
-        public async Task RemoveTownCommand(InteractionContext ctx,
-            [Option("dayCategory", "Town to remove - if blank, must be run from the town's control channel")] DiscordChannel? dayCat = null)
+        [Command("removetown")]
+        [Description("Unregister a town on this server without deleting any channels or roles")]
+        public async Task RemoveTownCommand(SlashCommandContext ctx,
+            [Description("Town to remove - if blank, must be run from the town's control channel")] DiscordChannel? dayCat = null)
         {
             if (!await DSharpCommandPermissions.RequireAdministratorAsync(ctx))
             {
                 return;
             }
 
-            if (dayCat != null && dayCat.Type != DSharpPlus.ChannelType.Category)
+            if (dayCat != null && dayCat.Type != DiscordChannelType.Category)
             {
-                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"**Error:** Channel `{dayCat.Name}` isn't a category!"));
+                await ctx.RespondAsync($"**Error:** Channel `{dayCat.Name}` isn't a category!", true);
+                return;
             }
 
             DSharpChannelCategory? dayCatWrapped = dayCat == null ? null : new DSharpChannelCategory(dayCat);
 
-            await BotSetup!.RemoveTownAsync(new DSharpInteractionContext(ctx), dayCatWrapped);
+            await m_botSetup.RemoveTownAsync(new DSharpInteractionContext(ctx), dayCatWrapped);
         }
 
-        [SlashCommand("playercount", "Show the player count chart for this town")]
-        public Task PlayerCountCommand(InteractionContext ctx)
+        [Command("playercount")]
+        [Description("Show the player count chart for this town")]
+        public Task PlayerCountCommand(SlashCommandContext ctx)
         {
-            return BotSetup!.PlayerCountAsync(new DSharpInteractionContext(ctx));
+            return m_botSetup.PlayerCountAsync(new DSharpInteractionContext(ctx));
         }
     }
 }

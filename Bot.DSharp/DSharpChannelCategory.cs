@@ -23,16 +23,22 @@ namespace Bot.DSharp
 		{
 			if (m is DSharpMember member)
 			{
-				await Wrapped.AddOverwriteAsync(member.Wrapped, (DSharpPlus.Permissions)allow, (DSharpPlus.Permissions)deny);
-			}
+                await Wrapped.AddOverwriteAsync(
+                    member.Wrapped,
+                    DSharpPermissionHelper.DSharpPermissionsFromBasePermissions(allow),
+                    DSharpPermissionHelper.DSharpPermissionsFromBasePermissions(deny));
+            }
 		}
 
 		public async Task AddOverwriteAsync(IRole r, IChannel.Permissions allow, Permissions deny = Permissions.None)
 		{
 			if (r is DSharpRole role)
 			{
-				await Wrapped.AddOverwriteAsync(role.Wrapped, (DSharpPlus.Permissions)allow, (DSharpPlus.Permissions)deny);
-			}
+                await Wrapped.AddOverwriteAsync(
+                    role.Wrapped,
+                    DSharpPermissionHelper.DSharpPermissionsFromBasePermissions((IBaseChannel.Permissions)allow),
+                    DSharpPermissionHelper.DSharpPermissionsFromBasePermissions(deny));
+            }
 		}
 
         public async Task DeleteAsync(string? reason = null)

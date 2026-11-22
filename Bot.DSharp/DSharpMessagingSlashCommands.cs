@@ -1,22 +1,32 @@
-﻿using Bot.Api;
+﻿
+using Bot.Api;
+using DSharpPlus.Commands;
+using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
-using DSharpPlus.SlashCommands;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace Bot.DSharp
 {
-    class DSharpMessagingSlashCommands : ApplicationCommandModule
+    public class DSharpMessagingSlashCommands
     {
-        public IBotMessaging? BotMessaging{ get; set; }
+        private readonly IBotMessaging m_botMessaging;
 
-        [SlashCommand("evil", "Send a message informing the evil team of each other")]
-        public async Task EvilCommand(InteractionContext ctx, 
-            [Option("demon", "The demon for this game")]DiscordUser demon,
-            [Option("minion1", "A minion for this game")]DiscordUser minion1,
-            [Option("minion2", "A minion for this game (optional)")]DiscordUser? minion2 = null,
-            [Option("minion3", "A minion for this game (optional)")] DiscordUser? minion3 = null,
-            [Option("magician", "If a Magician is in this game, specify them here (optional)")] DiscordUser? magician = null)
+        public DSharpMessagingSlashCommands(IBotMessaging botMessaging)
+        {
+            m_botMessaging = botMessaging;
+        }
+
+        [Command("evil")]
+        [Description("Send a message informing the evil team of each other")]
+        public async Task EvilCommand(
+            SlashCommandContext ctx,
+            [Description("The demon for this game")] DiscordUser demon,
+            [Description("A minion for this game")] DiscordUser minion1,
+            [Description("A minion for this game (optional)")] DiscordUser? minion2 = null,
+            [Description("A minion for this game (optional)")] DiscordUser? minion3 = null,
+            [Description("If a Magician is in this game, specify them here (optional)")] DiscordUser? magician = null)
         {
             if (!await DSharpCommandPermissions.RequireStorytellerAsync(ctx))
             {
@@ -25,31 +35,41 @@ namespace Bot.DSharp
 
             var allMinions = new[] { minion1, minion2, minion3 };
 
-            await BotMessaging!.CommandEvilMessageAsync(
+            await m_botMessaging.CommandEvilMessageAsync(
                 new DSharpInteractionContext(ctx),
-                new DSharpMember((DiscordMember)demon), 
-                allMinions.Where(x => x != null).Cast<DiscordMember>().Select(x => new DSharpMember(x)).ToList(), 
+                new DSharpMember((DiscordMember)demon),
+                allMinions
+                    .Where(x => x != null)
+                    .Cast<DiscordMember>()
+                    .Select(x => new DSharpMember(x))
+                    .ToList(),
                 magician == null ? null : new DSharpMember((DiscordMember)magician));
         }
 
-        [SlashCommand("lunatic", "Send a message to the Lunatic that *looks* like they're the demon")]
-        public async Task LunaticCommand(InteractionContext ctx,
-            [Option("lunatic", "The Lunatic!")]DiscordUser lunatic,
-            [Option("fakeMinion1", "A fake minion player")]DiscordUser fakeMinion1,
-            [Option("fakeMinion2", "A fake minion player")] DiscordUser? fakeMinion2 = null,
-            [Option("fakeMinion3", "A fake minion player")] DiscordUser? fakeMinion3 = null)
+        [Command("lunatic")]
+        [Description("Send a message to the Lunatic that *looks* like they're the demon")]
+        public async Task LunaticCommand(
+            SlashCommandContext ctx,
+            [Description("The Lunatic!")] DiscordUser lunatic,
+            [Description("A fake minion player")] DiscordUser fakeMinion1,
+            [Description("A fake minion player")] DiscordUser? fakeMinion2 = null,
+            [Description("A fake minion player")] DiscordUser? fakeMinion3 = null)
         {
             if (!await DSharpCommandPermissions.RequireStorytellerAsync(ctx))
             {
                 return;
             }
+
             var allMinions = new[] { fakeMinion1, fakeMinion2, fakeMinion3 };
 
-            await BotMessaging!.CommandLunaticMessageAsync(
+            await m_botMessaging.CommandLunaticMessageAsync(
                 new DSharpInteractionContext(ctx),
                 new DSharpMember((DiscordMember)lunatic),
-                allMinions.Where(x => x != null).Cast<DiscordMember>().Select(x => new DSharpMember(x)).ToList());
+                allMinions
+                    .Where(x => x != null)
+                    .Cast<DiscordMember>()
+                    .Select(x => new DSharpMember(x))
+                    .ToList());
         }
-
     }
 }

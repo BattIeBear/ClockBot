@@ -1,93 +1,111 @@
-﻿using Bot.Api;
+﻿
+using Bot.Api;
+using DSharpPlus.Commands;
+using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
-using DSharpPlus.SlashCommands;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace Bot.DSharp
 {
-    internal class EmptyCommands : ApplicationCommandModule
+    public class EmptyCommands
     {
     }
 
-    internal class DSharpGameSlashCommands : ApplicationCommandModule
+    public class DSharpGameSlashCommands
     {
-        public IBotGameplayInteractionHandler? BotGameplayHandler { get; set; }
+        private readonly IBotGameplayInteractionHandler m_botGameplayHandler;
 
-        [SlashCommand("night", "Move all active players from Town Square into Cottages for the night")]
-        public async Task NightCommand(InteractionContext ctx)
+        public DSharpGameSlashCommands(IBotGameplayInteractionHandler botGameplayHandler)
+        {
+            m_botGameplayHandler = botGameplayHandler;
+        }
+
+        [Command("night")]
+        [Description("Move all active players from Town Square into Cottages for the night")]
+        public async Task NightCommand(SlashCommandContext ctx)
         {
             if (!await DSharpCommandPermissions.RequireStorytellerAsync(ctx))
             {
                 return;
             }
 
-            await BotGameplayHandler!.CommandNightAsync(new DSharpInteractionContext(ctx));
+            await m_botGameplayHandler.CommandNightAsync(new DSharpInteractionContext(ctx));
         }
 
-        [SlashCommand("day", "Move all active players from Cottages to Town Square")]
-        public async Task DayCommand(InteractionContext ctx)
+        [Command("day")]
+        [Description("Move all active players from Cottages to Town Square")]
+        public async Task DayCommand(SlashCommandContext ctx)
         {
             if (!await DSharpCommandPermissions.RequireStorytellerAsync(ctx))
             {
                 return;
             }
 
-            await BotGameplayHandler!.CommandDayAsync(new DSharpInteractionContext(ctx));
+            await m_botGameplayHandler.CommandDayAsync(new DSharpInteractionContext(ctx));
         }
 
-        [SlashCommand("vote", "Move all active players to Town Square for voting")]
-        public async Task VoteCommand(InteractionContext ctx)
+        [Command("vote")]
+        [Description("Move all active players to Town Square for voting")]
+        public async Task VoteCommand(SlashCommandContext ctx)
         {
             if (!await DSharpCommandPermissions.RequireStorytellerAsync(ctx))
             {
                 return;
             }
 
-            await BotGameplayHandler!.CommandVoteAsync(new DSharpInteractionContext(ctx));
+            await m_botGameplayHandler.CommandVoteAsync(new DSharpInteractionContext(ctx));
         }
 
-        [SlashCommand("voteTimer", "Move all active players to Town Square for voting after a provided amount of time")]
-        public async Task VoteTimerCommand(InteractionContext ctx,
-    [Option("timeString", "Time string, such as \"5m30s\" or \"2 minutes\". Valid times are between 10 seconds and 20 minutes.")] string timeString)
+        [Command("votetimer")]
+        [Description("Move all active players to Town Square for voting after a provided amount of time")]
+        public async Task VoteTimerCommand(
+            SlashCommandContext ctx,
+            [Description("Time string, such as \"5m30s\" or \"2 minutes\". Valid times are between 10 seconds and 20 minutes.")]
+            string timeString)
         {
             if (!await DSharpCommandPermissions.RequireStorytellerAsync(ctx))
             {
                 return;
             }
 
-            await BotGameplayHandler!.RunVoteTimerAsync(new DSharpInteractionContext(ctx), timeString);
+            await m_botGameplayHandler.RunVoteTimerAsync(new DSharpInteractionContext(ctx), timeString);
         }
 
-        [SlashCommand("stopVoteTimer", "Cancels an outstanding call to `/voteTimer`.")]
-        public async Task StopVoteTimerCommand(InteractionContext ctx)
+        [Command("stopvotetimer")]
+        [Description("Cancels an outstanding call to `/votetimer`.")]
+        public async Task StopVoteTimerCommand(SlashCommandContext ctx)
         {
             if (!await DSharpCommandPermissions.RequireStorytellerAsync(ctx))
             {
                 return;
             }
 
-            await BotGameplayHandler!.RunStopVoteTimerAsync(new DSharpInteractionContext(ctx));
+            await m_botGameplayHandler.RunStopVoteTimerAsync(new DSharpInteractionContext(ctx));
         }
 
-        [SlashCommand("endGame", "End any current game, removing roles etc")]
-        public async Task EndGameCommand(InteractionContext ctx)
+        [Command("endgame")]
+        [Description("End any current game, removing roles etc")]
+        public async Task EndGameCommand(SlashCommandContext ctx)
         {
             if (!await DSharpCommandPermissions.RequireStorytellerAsync(ctx))
             {
                 return;
             }
 
-            await BotGameplayHandler!.CommandEndGameAsync(new DSharpInteractionContext(ctx));
+            await m_botGameplayHandler.CommandEndGameAsync(new DSharpInteractionContext(ctx));
         }
 
-        [SlashCommand("storytellers", "Explicitly list which users should be Storytellers")]
-        public async Task StorytellersCommand(InteractionContext ctx,
-            [Option("user1", "Storyteller")] DiscordUser user1,
-            [Option("user2", "Further storyteller")] DiscordUser? user2 = null,
-            [Option("user3", "An additional storyteller")] DiscordUser? user3 = null,
-            [Option("user4", "Yet another storyteller")] DiscordUser? user4 = null,
-            [Option("user5", "Hopefully the last storyteller")] DiscordUser? user5 = null)
+        [Command("storytellers")]
+        [Description("Explicitly list which users should be Storytellers")]
+        public async Task StorytellersCommand(
+            SlashCommandContext ctx,
+            [Description("Storyteller")] DiscordUser user1,
+            [Description("Further storyteller")] DiscordUser? user2 = null,
+            [Description("An additional storyteller")] DiscordUser? user3 = null,
+            [Description("Yet another storyteller")] DiscordUser? user4 = null,
+            [Description("Hopefully the last storyteller")] DiscordUser? user5 = null)
         {
             if (!await DSharpCommandPermissions.RequireStorytellerAsync(ctx))
             {
@@ -95,8 +113,14 @@ namespace Bot.DSharp
             }
 
             var allUsers = new[] { user1, user2, user3, user4, user5 };
-            await BotGameplayHandler!.CommandSetStorytellersAsync(new DSharpInteractionContext(ctx), allUsers.Where(x => x != null).Cast<DiscordMember>().Select(x => new DSharpMember(x)).ToList());
-        }
 
+            await m_botGameplayHandler.CommandSetStorytellersAsync(
+                new DSharpInteractionContext(ctx),
+                allUsers
+                    .Where(x => x != null)
+                    .Cast<DiscordMember>()
+                    .Select(x => new DSharpMember(x))
+                    .ToList());
+        }
     }
 }

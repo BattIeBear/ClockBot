@@ -7,50 +7,84 @@ using System.Linq;
 namespace Bot.DSharp
 {
     class DSharpInteractionResponseBuilder : DiscordWrapper<DiscordInteractionResponseBuilder>, IInteractionResponseBuilder
-	{
-		public DSharpInteractionResponseBuilder(DiscordInteractionResponseBuilder wrapped)
-			: base(wrapped)
-		{
-		}
+    {
+        public DiscordModalBuilder Modal { get; } = new DiscordModalBuilder();
 
-		public IInteractionResponseBuilder WithContent(string content)
-		{
-			var w2 = Wrapped.WithContent(content);
-			if (w2 != Wrapped) throw new ApplicationException("Unexpected chained call did not return itself");
-			return this;
-		}
+        public DSharpInteractionResponseBuilder(DiscordInteractionResponseBuilder wrapped)
+            : base(wrapped)
+        {
+        }
 
-		public IInteractionResponseBuilder AddComponents(params IBotComponent[] components)
-		{
-			if (!components.All(x => x is DSharpComponent)) throw new InvalidOperationException("Unexpected type of IComponent!");
-			var realComponents = components.Cast<DSharpComponent>().Select(x => x.Wrapped);
-			var w2 = Wrapped.AddComponents(realComponents);
-			if (w2 != Wrapped) throw new ApplicationException("Unexpected chained call did not return itself");
-			return this;
-		}
+        public IInteractionResponseBuilder WithContent(string content)
+        {
+            Wrapped.WithContent(content);
+            return this;
+        }
 
         public IInteractionResponseBuilder WithTitle(string title)
         {
-			var w2 = Wrapped.WithTitle(title);
-			if (w2 != Wrapped) throw new ApplicationException("Unexpected chained call did not return itself");
-			return this;
-		}
+            Modal.WithTitle(title);
+            return this;
+        }
 
         public IInteractionResponseBuilder WithCustomId(string customId)
         {
-			var w2 = Wrapped.WithCustomId(customId);
-			if (w2 != Wrapped) throw new ApplicationException("Unexpected chained call did not return itself");
-			return this;
-		}
+            Modal.WithCustomId(customId);
+            return this;
+        }
+
+        public IInteractionResponseBuilder AddComponents(params IBotComponent[] components)
+        {
+            if (!components.All(x => x is DSharpComponent))
+                throw new InvalidOperationException("Unexpected type of IComponent!");
+
+            var typed = components.Cast<DSharpComponent>().ToList();
+
+            if (typed.All(x => x.Wrapped is DiscordTextInputComponent))
+            {
+                foreach (var component in typed)
+                {
+                    if (string.IsNullOrWhiteSpace(component.ModalLabel))
+                        throw new InvalidOperationException("Modal text inputs must have a label!");
+
+                    Modal.AddTextInput((DiscordTextInputComponent)component.Wrapped, component.ModalLabel);
+                }
+            }
+            else
+            {
+                if (typed.Any(x => x.Wrapped is DiscordTextInputComponent))
+                    throw new InvalidOperationException("Modal text inputs cannot be mixed with message components!");
+
+                foreach (var component in typed)
+                {
+                    if (component.Wrapped is DiscordButtonComponent button)
+                    {
+                        Wrapped.AddActionRowComponent(button);
+                    }
+                    else if (component.Wrapped is BaseDiscordSelectComponent select)
+                    {
+                        Wrapped.AddActionRowComponent(select);
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("Unsupported interaction component type!");
+                    }
+                }
+            }
+
+            return this;
+        }
 
         public IInteractionResponseBuilder AddEmbeds(IEnumerable<IEmbed> embeds)
-		{
-			var typed = embeds.Select(e => e as DSharpEmbed);
-			if (!typed.All(e => e != null)) throw new InvalidOperationException("Expected to be passed only embeds of DSharp types");
+        {
+            var typed = embeds.Select(e => e as DSharpEmbed).ToList();
 
-			var w2 = Wrapped.AddEmbeds(typed.Select(t => t!.Wrapped));
-			if (w2 != Wrapped) throw new ApplicationException("Unexpected chained call did not return itself");
-			return this;
-		}
+            if (!typed.All(e => e != null))
+                throw new InvalidOperationException("Expected to be passed only embeds of DSharp types");
+
+            Wrapped.AddEmbeds(typed.Select(t => t!.Wrapped));
+
+            return this;
+        }
     }
 }

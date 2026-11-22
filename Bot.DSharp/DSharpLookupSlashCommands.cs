@@ -1,59 +1,74 @@
 ﻿using Bot.Api;
-using DSharpPlus.SlashCommands;
+using DSharpPlus.Commands;
+using DSharpPlus.Commands.Processors.SlashCommands;
+using System.ComponentModel;
 using System.Threading.Tasks;
 
 namespace Bot.DSharp
 {
-    class DSharpLookupSlashCommands : ApplicationCommandModule
+    public class DSharpLookupSlashCommands
     {
-        public IBotLookupService? BotLookup { get; set; }
+        private readonly IBotLookupService m_botLookup;
 
-        [SlashCommand("role", "Look up a role")]
-        public Task LookupCommand(InteractionContext ctx,
-            [Option("lookupString", "Role you want to look up")]string lookupString)
+        public DSharpLookupSlashCommands(IBotLookupService botLookup)
         {
-            return BotLookup!.LookupAsync(new DSharpInteractionContext(ctx), lookupString);
+            m_botLookup = botLookup;
         }
 
-        [SlashCommand("addScript", "Add a script json URL for later lookup")]
-        public async Task AddScriptCommand(InteractionContext ctx,
-            [Option("scriptJsonUrl", "URL pointing at a json file for the script")]string scriptJsonUrl)
+        [Command("role")]
+        [Description("Look up a role")]
+        public Task LookupCommand(
+            SlashCommandContext ctx,
+            [Description("Role you want to look up")] string lookupString)
+        {
+            return m_botLookup.LookupAsync(new DSharpInteractionContext(ctx), lookupString);
+        }
+
+        [Command("addscript")]
+        [Description("Add a script json URL for later lookup")]
+        public async Task AddScriptCommand(
+            SlashCommandContext ctx,
+            [Description("URL pointing at a json file for the script")] string scriptJsonUrl)
         {
             if (!await DSharpCommandPermissions.RequireAdministratorAsync(ctx))
             {
                 return;
             }
 
-            await BotLookup!.AddScriptAsync(new DSharpInteractionContext(ctx), scriptJsonUrl);
+            await m_botLookup.AddScriptAsync(new DSharpInteractionContext(ctx), scriptJsonUrl);
         }
 
-        [SlashCommand("removeScript", "Remove script json URL previously added")]
-        public async Task RemoveScriptCommand(InteractionContext ctx,
-            [Option("scriptJsonUrl", "URL pointing at a json file for the script")]string scriptJsonUrl)
+        [Command("removescript")]
+        [Description("Remove script json URL previously added")]
+        public async Task RemoveScriptCommand(
+            SlashCommandContext ctx,
+            [Description("URL pointing at a json file for the script")] string scriptJsonUrl)
         {
             if (!await DSharpCommandPermissions.RequireAdministratorAsync(ctx))
             {
                 return;
             }
 
-            await BotLookup!.RemoveScriptAsync(new DSharpInteractionContext(ctx), scriptJsonUrl);
+            await m_botLookup.RemoveScriptAsync(new DSharpInteractionContext(ctx), scriptJsonUrl);
         }
 
-        [SlashCommand("listScripts", "List script json URLs added to this server")]
-        public Task ListScriptsCommand(InteractionContext ctx)
+        [Command("listscripts")]
+        [Description("List script json URLs added to this server")]
+        public Task ListScriptsCommand(SlashCommandContext ctx)
         {
-            return BotLookup!.ListScriptsAsync(new DSharpInteractionContext(ctx));
+            return m_botLookup.ListScriptsAsync(new DSharpInteractionContext(ctx));
         }
 
-        [SlashCommand("refreshScripts", "Refresh scripts registered for this server")]
-        public async Task RefreshScriptsCommand(InteractionContext ctx)
+        [Command("refreshscripts")]
+        [Description("Refresh scripts registered for this server")]
+        public async Task RefreshScriptsCommand(SlashCommandContext ctx)
         {
             if (!await DSharpCommandPermissions.RequireAdministratorAsync(ctx))
             {
                 return;
             }
 
-            await BotLookup!.RefreshScriptsAsync(new DSharpInteractionContext(ctx));
+            await m_botLookup.RefreshScriptsAsync(new DSharpInteractionContext(ctx));
         }
     }
 }

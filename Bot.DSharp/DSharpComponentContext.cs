@@ -37,7 +37,7 @@ namespace Bot.DSharp
 
 
         // Defer and say we're going to update the original message
-        public Task DeferInteractionResponse() => Wrapped.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
+        public Task DeferInteractionResponse() => Wrapped.CreateResponseAsync(DiscordInteractionResponseType.DeferredMessageUpdate);
 
 		public Task EditResponseAsync(IBotWebhookBuilder webhookBuilder)
 		{
@@ -50,7 +50,7 @@ namespace Bot.DSharp
 		public Task UpdateOriginalMessageAsync(IInteractionResponseBuilder builder)
 		{
 			if (builder is DSharpInteractionResponseBuilder d)
-				return ExceptionWrap.WrapExceptionsAsync(() => Wrapped.CreateResponseAsync(InteractionResponseType.UpdateMessage, d.Wrapped));
+				return ExceptionWrap.WrapExceptionsAsync(() => Wrapped.CreateResponseAsync(DiscordInteractionResponseType.UpdateMessage, d.Wrapped));
 
 			throw new InvalidOperationException("Passed an incorrect builder!");
 		}
@@ -58,7 +58,7 @@ namespace Bot.DSharp
 		public Task ShowModalAsync(IInteractionResponseBuilder builder)
 		{
 			if (builder is DSharpInteractionResponseBuilder d)
-				return ExceptionWrap.WrapExceptionsAsync(() => Wrapped.CreateResponseAsync(InteractionResponseType.Modal, d.Wrapped));
+				return ExceptionWrap.WrapExceptionsAsync(() => Wrapped.CreateResponseAsync(DiscordInteractionResponseType.Modal, d.Wrapped));
 
 			throw new InvalidOperationException("Passed an incorrect builder!");
 		}

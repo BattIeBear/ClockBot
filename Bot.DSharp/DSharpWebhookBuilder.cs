@@ -19,12 +19,52 @@ namespace Bot.DSharp
             return this;
         }
 
+
         public IBotWebhookBuilder AddComponents(params IBotComponent[] components)
         {
-            if (!components.All(x => x is DSharpComponent)) throw new InvalidOperationException("Unexpected type of IComponent!");
-            var realComponents = components.Cast<DSharpComponent>().Select(x => x.Wrapped);
-            var w2 = Wrapped.AddComponents(realComponents);
-            if (w2 != Wrapped) throw new ApplicationException("Unexpected chained call did not return itself");
+            if (!components.All(x => x is DSharpComponent))
+                throw new InvalidOperationException("Unexpected type of IComponent!");
+
+            var realComponents = components.Cast<DSharpComponent>().Select(x => x.Wrapped).ToList();
+            var buttons = new List<DiscordButtonComponent>();
+
+            void AddButtons()
+            {
+                while (buttons.Count > 0)
+                {
+                    var row = buttons.Take(5).ToList();
+                    var w2 = Wrapped.AddActionRowComponent(row);
+
+                    if (w2 != Wrapped)
+                        throw new ApplicationException("Unexpected chained call did not return itself");
+
+                    buttons.RemoveRange(0, row.Count);
+                }
+            }
+
+            foreach (var component in realComponents)
+            {
+                if (component is DiscordButtonComponent button)
+                {
+                    buttons.Add(button);
+                }
+                else if (component is BaseDiscordSelectComponent select)
+                {
+                    AddButtons();
+
+                    var w2 = Wrapped.AddActionRowComponent(select);
+
+                    if (w2 != Wrapped)
+                        throw new ApplicationException("Unexpected chained call did not return itself");
+                }
+                else
+                {
+                    throw new InvalidOperationException("Unsupported component type!");
+                }
+            }
+
+            AddButtons();
+
             return this;
         }
 

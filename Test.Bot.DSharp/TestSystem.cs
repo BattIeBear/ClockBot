@@ -26,8 +26,7 @@ namespace Test.Bot.DSharp
         {
             var mockClient = new Mock<IDiscordClient>();
             var mockFactory = RegisterMock(new Mock<IDiscordClientFactory>());
-            mockFactory.Setup(f => f.CreateClient(It.IsAny<DiscordConfiguration>())).Returns(mockClient.Object);
-
+            mockFactory.Setup(f => f.CreateClient(It.IsAny<DiscordClientBuilder>())).Returns(mockClient.Object);
             var env = RegisterMock(new Mock<IEnvironment>());
             env.Setup(e => e.GetEnvironmentVariable(It.IsAny<string>())).Returns("env var");
 

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 
 namespace Bot.DSharp
@@ -40,9 +41,9 @@ namespace Bot.DSharp
         {
             DiscordChannel? dc;
             if (parent is DSharpChannelCategory dp)
-                dc = await Wrapped.CreateChannelAsync(name, DSharpPlus.ChannelType.Voice, dp.Wrapped);
+                dc = await Wrapped.CreateChannelAsync(name, DiscordChannelType.Voice, dp.Wrapped);
             else
-                dc = await Wrapped.CreateChannelAsync(name, DSharpPlus.ChannelType.Voice);
+                dc = await Wrapped.CreateChannelAsync(name, DiscordChannelType.Voice);
 
             return dc != null ? new DSharpChannel(dc) : null;
         }
@@ -51,9 +52,9 @@ namespace Bot.DSharp
         {
             DiscordChannel? dc;
             if (parent is DSharpChannelCategory dp)
-                dc = await Wrapped.CreateChannelAsync(name, DSharpPlus.ChannelType.Text, dp.Wrapped);
+                dc = await Wrapped.CreateChannelAsync(name, DiscordChannelType.Text, dp.Wrapped);
             else
-                dc = await Wrapped.CreateChannelAsync(name, DSharpPlus.ChannelType.Text);
+                dc = await Wrapped.CreateChannelAsync(name, DiscordChannelType.Text);
 
             return dc != null ? new DSharpChannel(dc) : null;
         }
@@ -72,9 +73,11 @@ namespace Bot.DSharp
 
         public IChannel? GetChannel(ulong id)
         {
-            var channel = Wrapped.GetChannel(id);
-            if (channel != null && IsStandardChannel(channel))
+            if (Wrapped.Channels.TryGetValue(id, out var channel) && IsStandardChannel(channel))
+            {
                 return new DSharpChannel(channel);
+            }
+
             return null;
         }
 
@@ -90,9 +93,11 @@ namespace Bot.DSharp
 
         public IChannelCategory? GetChannelCategory(ulong id)
         {
-            var channel = Wrapped.GetChannel(id);
-            if (channel != null && IsChannelCategory(channel))
+            if (Wrapped.Channels.TryGetValue(id, out var channel) && IsChannelCategory(channel))
+            {
                 return new DSharpChannelCategory(channel);
+            }
+
             return null;
         }
 
@@ -125,12 +130,12 @@ namespace Bot.DSharp
 
         private static bool IsStandardChannel(DiscordChannel channel)
         {
-            return channel.Type == DSharpPlus.ChannelType.Text || channel.Type == DSharpPlus.ChannelType.Voice;
+            return channel.Type == DiscordChannelType.Text || channel.Type == DiscordChannelType.Voice;
         }
 
         private static bool IsChannelCategory(DiscordChannel channel)
         {
-            return channel.Type == DSharpPlus.ChannelType.Category;
+            return channel.Type == DiscordChannelType.Category;
         }
 
         public IRole? GetRoleByName(string name)

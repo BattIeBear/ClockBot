@@ -1,21 +1,43 @@
-﻿using Bot.Api;
+﻿
+using Bot.Api;
+using DSharpPlus.Entities;
+using System;
 
 namespace Bot.DSharp
 {
     public static class DSharpPermissionHelper
     {
-        public static IBaseChannel.Permissions BasePermissionsFromDSharpPermissions(DSharpPlus.Permissions dSharpPermissions)
+        public static IBaseChannel.Permissions BasePermissionsFromDSharpPermissions(DiscordPermissions dSharpPermissions)
         {
-            // TODO: Could be better than just a cast, we should probably seaprate these.
-            // But note that flag status needs to be preserved
-            return (IBaseChannel.Permissions)dSharpPermissions;
+            ulong value = 0;
+
+            foreach (DiscordPermission permission in Enum.GetValues<DiscordPermission>())
+            {
+                if (dSharpPermissions.HasFlag(permission))
+                {
+                    value |= 1UL << permission.AsUnderlyingType();
+                }
+            }
+
+            return (IBaseChannel.Permissions)value;
         }
 
-        public static DSharpPlus.Permissions DSharpPermissionsFromBasePermissions(IBaseChannel.Permissions basePermissions)
+        public static DiscordPermissions DSharpPermissionsFromBasePermissions(IBaseChannel.Permissions basePermissions)
         {
-            // TODO: Could be better than just a cast, we should probably seaprate these.
-            // But note that flag status needs to be preserved
-            return (DSharpPlus.Permissions)basePermissions;
+            ulong value = Convert.ToUInt64(basePermissions);
+            DiscordPermissions permissions = DiscordPermissions.None;
+
+            foreach (DiscordPermission permission in Enum.GetValues<DiscordPermission>())
+            {
+                ulong flag = 1UL << permission.AsUnderlyingType();
+
+                if ((value & flag) != 0)
+                {
+                    permissions.Add(permission);
+                }
+            }
+
+            return permissions;
         }
     }
 }

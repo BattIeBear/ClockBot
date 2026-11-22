@@ -1,8 +1,7 @@
 ﻿
 using Bot.Api.Database;
-using DSharpPlus;
+using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
-using DSharpPlus.SlashCommands;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -10,12 +9,12 @@ namespace Bot.DSharp
 {
     internal static class DSharpCommandPermissions
     {
-        public static bool IsAdministrator(InteractionContext ctx)
+        public static bool IsAdministrator(SlashCommandContext ctx)
         {
-            return ctx.Member != null && ctx.Member.Permissions.HasPermission(Permissions.Administrator);
+            return ctx.Member?.Permissions.HasPermission(DiscordPermission.Administrator) ?? false;
         }
 
-        public static async Task<bool> RequireAdministratorAsync(InteractionContext ctx)
+        public static async Task<bool> RequireAdministratorAsync(SlashCommandContext ctx)
         {
             if (IsAdministrator(ctx))
             {
@@ -26,7 +25,7 @@ namespace Bot.DSharp
             return false;
         }
 
-        public static async Task<bool> RequireStorytellerAsync(InteractionContext ctx)
+        public static async Task<bool> RequireStorytellerAsync(SlashCommandContext ctx)
         {
             if (ctx.Guild == null || ctx.Member == null)
             {
@@ -34,7 +33,7 @@ namespace Bot.DSharp
                 return false;
             }
 
-            var townDb = ctx.Services.GetService(typeof(ITownDatabase)) as ITownDatabase;
+            var townDb = ctx.ServiceProvider.GetService(typeof(ITownDatabase)) as ITownDatabase;
 
             if (townDb == null)
             {
@@ -43,7 +42,9 @@ namespace Bot.DSharp
 
             var townRecord = await townDb.GetTownRecordAsync(ctx.Guild.Id, ctx.Channel.Id);
 
-            if (townRecord == null || townRecord.StorytellerRoleId == 0 || !ctx.Member.Roles.Any(role => role.Id == townRecord.StorytellerRoleId))
+            if (townRecord == null ||
+                townRecord.StorytellerRoleId == 0 ||
+                !ctx.Member.Roles.Any(role => role.Id == townRecord.StorytellerRoleId))
             {
                 await DenyAsync(ctx, "You must have this town's **Storyteller** role to use this command.");
                 return false;
@@ -52,7 +53,7 @@ namespace Bot.DSharp
             return true;
         }
 
-        public static async Task<bool> RequireStorytellerOrAdministratorAsync(InteractionContext ctx)
+        public static async Task<bool> RequireStorytellerOrAdministratorAsync(SlashCommandContext ctx)
         {
             if (IsAdministrator(ctx))
             {
@@ -62,9 +63,9 @@ namespace Bot.DSharp
             return await RequireStorytellerAsync(ctx);
         }
 
-        private static Task DenyAsync(InteractionContext ctx, string message)
+        private static async Task DenyAsync(SlashCommandContext ctx, string message)
         {
-            return ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent(message).AsEphemeral());
+            await ctx.RespondAsync(message, true);
         }
     }
 }
