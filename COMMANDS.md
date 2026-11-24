@@ -1,11 +1,5 @@
 # Gameplay Command Details
 
-## `/game`
-
-Primary game flow command - will give you convenient buttons for managing the Day / Night cycle as well as bringing villagers back to vote.
-
-![image](https://user-images.githubusercontent.com/151635/162875175-1511caa7-580f-4f07-8706-fc232b3e8fec.png)
-
 ## `/night`
 
 Sends all members in the Town Square channel to individual channels within the Nighttime category.
@@ -20,7 +14,7 @@ Brings all members from other Daytime category channels back to the Town Square 
 
 ## `/votetimer <time>`
 
-Runs `/vote` after the specified amount of time. Valid times range from 15 seconds to 20 minutes.
+Runs `/vote` after the specified amount of time. Valid times range from 10 seconds to 20 minutes.
 
 ## `/stopvotetimer`
 
@@ -124,12 +118,16 @@ The opposite of `/addtown` - when run in the control channel for a town, removes
 
 Lets you set the optional channels for a previously-created town
 
+## `/playercount`
+
+Displays the player count chart for the town associated with the current channel.
+
 
 ---
 
 # Lookup Command Details
 
-## `/lookup <character name>`
+## `/role <character name>`
 
 Looks up a character by name. Official characters provided by https://clocktower.online/ are supported.
 

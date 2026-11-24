@@ -6,6 +6,8 @@ This bot handles setting up all the channels, roles, and permissions you need to
 
 # Invite the Bot
 
+##Replace with current invite
+
 First, you need to **\>\>** [invite the bot](https://discord.com/api/oauth2/authorize?client_id=795055055509651456&permissions=419441680&scope=applications.commands%20bot) **\<\<**
 
 For more information on the permissions it requests, see [Permission Details](#permission-details).
@@ -27,7 +29,9 @@ For more information on precisely what this command does (what categories, roles
 
 # Gameplay
 
-All players can gather in the Town Square channel while the Storyteller sets up the game on http://clocktower.online (or whatever mechanism your group uses).
+All players can gather in the Town Square channel while the Storyteller sets up the game on https://clocktower.online (or whatever mechanism your group uses).
+
+##NOTE: Replace `/game` with new functionality 
 
 When it's time for Night 1 to begin, the Storyteller should use the `/game` command to start a new game.
 
@@ -44,7 +48,7 @@ During the Night, the Storyteller can visit Cottages as dictated by the night or
 Once the night phase is complete, the Storyteller presses the Day button (or uses the `/day` command) to bring the players back to the Town Square and begin the day.
 
 ## Day Phase
-Players can switch to other Daytime channels to have semi-private conversations until the Storyteller is ready to open nominations. The Storyteller may use the Vote button (or `/vote` command) or set a Vote Timer using the dropdown (or `/voteTimer` command) to drag all the players back to the Town Square.
+Players can switch to other Daytime channels to have semi-private conversations until the Storyteller is ready to open nominations. The Storyteller may use the Vote button (or `/vote` command) or set a Vote Timer using the dropdown (or `/votetimer` command) to drag all the players back to the Town Square.
 
 This cycle of night & day continues until there's a winner!
 
@@ -83,9 +87,3 @@ The bot requests the following permissions:
 | Manage Messages | To delete `/evil` command messages so players can't see who's evil |
 | View Channels | Required for many operations |
 | Send Messages | Required for many operations |
-
-# Support
-
-I can be contacted on Discord at lilserf#8712 with any issues or questions.
-In general, please file a Github issue with lots of details if you run into problems.
-Of course, we're just doing this in our spare time and the bot features have primarily been driven by what our local play group needs, so please be patient.
