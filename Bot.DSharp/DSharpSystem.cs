@@ -30,12 +30,36 @@ namespace Bot.DSharp
             };
         }
 
-        public IBotComponent CreateButton(string customId, string label, IBotSystem.ButtonType type, bool disabled=false, string? emoji=null) 
-            => new DSharpComponent(new DiscordButtonComponent(TranslateButtonStyle(type), customId, label, disabled, emoji != null ? new DiscordComponentEmoji(emoji):null));
+        public IBotComponent CreateButton(string customId, string label, IBotSystem.ButtonType type, bool disabled = false, string? emoji = null)
+        {
+            var style = TranslateButtonStyle(type);
+
+            var button = emoji is null
+                ? new DiscordButtonComponent(style, customId, label, disabled)
+                : new DiscordButtonComponent(style, customId, label, disabled, new DiscordComponentEmoji(emoji));
+
+            return new DSharpComponent(button);
+        }
 
         public IBotComponent CreateSelectMenu(string customId, string placeholder, IEnumerable<IBotSystem.SelectMenuOption> options, bool disabled = false, int minOptions = 1, int maxOptions = 1)
         {
-            var dOptions = options.Select(x => new DiscordSelectComponentOption(x.Label, x.Value, x.Description, x.IsDefault, x.Emoji != null ? new DiscordComponentEmoji(x.Emoji) : null));
+            var dOptions = options.Select(x =>
+            {
+                var description = x.Description;
+                var emoji = x.Emoji;
+
+                if (description is null)
+                {
+                    return emoji is null
+                        ? new DiscordSelectComponentOption(x.Label, x.Value, isDefault: x.IsDefault)
+                        : new DiscordSelectComponentOption(x.Label, x.Value, isDefault: x.IsDefault, emoji: new DiscordComponentEmoji(emoji));
+                }
+
+                return emoji is null
+                    ? new DiscordSelectComponentOption(x.Label, x.Value, description, x.IsDefault)
+                    : new DiscordSelectComponentOption(x.Label, x.Value, description, x.IsDefault, new DiscordComponentEmoji(emoji));
+            });
+
             var menu = new DSharpComponent(new DiscordSelectComponent(customId, placeholder, dOptions, disabled, minOptions, maxOptions));
             return menu;
         }

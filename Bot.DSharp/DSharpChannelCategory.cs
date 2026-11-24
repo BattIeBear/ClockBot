@@ -43,7 +43,14 @@ namespace Bot.DSharp
 
         public async Task DeleteAsync(string? reason = null)
         {
-			await Wrapped.DeleteAsync(reason);
+            if (reason is null)
+            {
+                await Wrapped.DeleteAsync();
+            }
+            else
+            {
+                await Wrapped.DeleteAsync(reason);
+            }
         }
 
         public IChannel? GetChannelByName(string name)

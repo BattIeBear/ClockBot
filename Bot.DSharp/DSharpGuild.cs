@@ -45,7 +45,7 @@ namespace Bot.DSharp
             else
                 dc = await Wrapped.CreateChannelAsync(name, DiscordChannelType.Voice);
 
-            return dc != null ? new DSharpChannel(dc) : null;
+            return dc is not null ? new DSharpChannel(dc) : null;
         }
 
         public async Task<IChannel?> CreateTextChannelAsync(string name, IChannelCategory? parent = null)
@@ -56,19 +56,19 @@ namespace Bot.DSharp
             else
                 dc = await Wrapped.CreateChannelAsync(name, DiscordChannelType.Text);
 
-            return dc != null ? new DSharpChannel(dc) : null;
+            return dc is not null ? new DSharpChannel(dc) : null;
         }
 
         public async Task<IChannelCategory?> CreateCategoryAsync(string name)
         {
             var c = await Wrapped.CreateChannelCategoryAsync(name);
-            return c != null ? new DSharpChannelCategory(c) : null;
+            return c is not null ? new DSharpChannelCategory(c) : null;
         }
 
         public async Task<IRole?> CreateRoleAsync(string name, Color color)
         {
             var r = await Wrapped.CreateRoleAsync(name, null, new DiscordColor(color.R, color.G, color.B));
-            return r != null ? new DSharpRole(r) : null;
+            return r is not null ? new DSharpRole(r) : null;
         }
 
         public IChannel? GetChannel(ulong id)
@@ -122,7 +122,7 @@ namespace Bot.DSharp
                 // TODO: how do we get the bot user name instead of magic-stringing this
                 var botName = Environment.GetEnvironmentVariable("BOT_NAME") ?? "Bot on the Clocktower";
                 var role = Wrapped.Roles.Where(kvp => kvp.Value.IsManaged == true && kvp.Value.Name.Equals(botName)).Select(kvp => kvp.Value).FirstOrDefault();
-                return role == null ? null : new DSharpRole(role);
+                return role is null ? null : new DSharpRole(role);
             }
         }
 

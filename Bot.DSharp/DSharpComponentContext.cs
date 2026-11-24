@@ -16,11 +16,15 @@ namespace Bot.DSharp
 
 		public DSharpComponentContext(DiscordInteraction wrapped)
 			: base(wrapped)
-		{
-			if (wrapped.User is not DiscordMember dm)
-				throw new InvalidOperationException("Passed unexpected User type");
+        {
+            var guild = wrapped.Guild ?? throw new InvalidOperationException("This interaction must occur in a server.");
 
-			m_guild = new DSharpGuild(wrapped.Guild);
+            if (wrapped.User is not DiscordMember dm)
+			{
+				throw new InvalidOperationException("Passed unexpected User type");
+			}
+
+			m_guild = new DSharpGuild(guild);
 			m_channel = new DSharpChannel(wrapped.Channel);
 			m_member = new DSharpMember(dm);
 		}

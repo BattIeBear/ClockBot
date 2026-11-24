@@ -23,7 +23,7 @@ namespace Bot.DSharp
         public async Task<IGuild?> GetGuildAsync(ulong id)
         {
             var guild = await m_wrapped.GetGuildAsync(id);
-            return guild == null ? null : new DSharpGuild(guild);
+            return guild is null ? null : new DSharpGuild(guild);
         }
 
         public Task ConnectAsync() => m_wrapped.ConnectAsync();

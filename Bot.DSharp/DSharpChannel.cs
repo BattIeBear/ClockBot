@@ -49,14 +49,21 @@ namespace Bot.DSharp
 				catch (Bot.Api.UnauthorizedException)
 				{ }
 			}
-		}
+        }
 
         public async Task DeleteAsync(string? reason = null)
         {
-			await Wrapped.DeleteAsync(reason);
+            if (reason is null)
+            {
+                await Wrapped.DeleteAsync();
+            }
+            else
+            {
+                await Wrapped.DeleteAsync(reason);
+            }
         }
 
-		public async Task RemoveOverwriteAsync(IRole m)
+        public async Task RemoveOverwriteAsync(IRole m)
 		{
 			if (m is DSharpRole role)
 			{

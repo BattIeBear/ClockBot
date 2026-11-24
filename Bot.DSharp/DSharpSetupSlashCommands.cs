@@ -35,8 +35,8 @@ namespace Bot.DSharp
                 return;
             }
 
-            var wrappedPlayerRole = playerRole == null ? null : new DSharpRole(playerRole);
-            var wrappedStRole = stRole == null ? null : new DSharpRole(stRole);
+            var wrappedPlayerRole = playerRole is null ? null : new DSharpRole(playerRole);
+            var wrappedStRole = stRole is null ? null : new DSharpRole(stRole);
 
             await m_botSetup.CreateTownAsync(new DSharpInteractionContext(ctx), townName, wrappedPlayerRole, wrappedStRole, useNight);
         }
@@ -81,12 +81,12 @@ namespace Bot.DSharp
 
             List<string> errors = new();
 
-            if (chatChannel != null && chatChannel.Type != DiscordChannelType.Text)
+            if (chatChannel is not null && chatChannel.Type != DiscordChannelType.Text)
             {
                 errors.Add($"- Chat channel `{chatChannel.Name}` is not a text channel!");
             }
 
-            if (nightCat != null && nightCat.Type != DiscordChannelType.Category)
+            if (nightCat is not null && nightCat.Type != DiscordChannelType.Category)
             {
                 errors.Add($"- Night category `{nightCat.Name}` is not a category!");
             }
@@ -97,8 +97,8 @@ namespace Bot.DSharp
                 return;
             }
 
-            var chatChanWrapped = chatChannel == null ? null : new DSharpChannel(chatChannel);
-            var nightCatWrapped = nightCat == null ? null : new DSharpChannelCategory(nightCat);
+            var chatChanWrapped = chatChannel is null ? null : new DSharpChannel(chatChannel);
+            var nightCatWrapped = nightCat is null ? null : new DSharpChannelCategory(nightCat);
 
             await m_botSetup.ModifyTownAsync(new DSharpInteractionContext(ctx), chatChanWrapped, nightCatWrapped);
         }
@@ -147,17 +147,17 @@ namespace Bot.DSharp
                 errors.Add($"- Town Square channel `{townSquare.Name}` is not in the **{dayCategory.Name}** category!");
             }
 
-            if (nightCategory != null && nightCategory.Type != DiscordChannelType.Category)
+            if (nightCategory is not null && nightCategory.Type != DiscordChannelType.Category)
             {
                 errors.Add($"- Night category `{nightCategory.Name}` is not a category!");
             }
 
-            if (chatChannel != null && chatChannel.Type != DiscordChannelType.Text)
+            if (chatChannel is not null && chatChannel.Type != DiscordChannelType.Text)
             {
                 errors.Add($"- Chat channel `{chatChannel.Name}` is not a text channel!");
             }
 
-            if (chatChannel != null && dayCategory.Type == DiscordChannelType.Category && !dayCategory.Children.Contains(chatChannel))
+            if (chatChannel is not null && dayCategory.Type == DiscordChannelType.Category && !dayCategory.Children.Contains(chatChannel))
             {
                 errors.Add($"- Chat channel `{chatChannel.Name}` is not in the **{dayCategory.Name}** category!");
             }
@@ -173,10 +173,10 @@ namespace Bot.DSharp
             var townChan = new DSharpChannel(townSquare);
             var dayCat = new DSharpChannelCategory(dayCategory);
 
-            var nightCat = nightCategory == null ? null : new DSharpChannelCategory(nightCategory);
+            var nightCat = nightCategory is null ? null : new DSharpChannelCategory(nightCategory);
             var stRoleWrapped = new DSharpRole(stRole);
             var villagerRoleWrapped = new DSharpRole(villagerRole);
-            var chatChan = chatChannel == null ? null : new DSharpChannel(chatChannel);
+            var chatChan = chatChannel is null ? null : new DSharpChannel(chatChannel);
 
             await m_botSetup.AddTownAsync(new DSharpInteractionContext(ctx), controlChan, townChan, dayCat, nightCat, stRoleWrapped, villagerRoleWrapped, chatChan);
         }
@@ -192,13 +192,13 @@ namespace Bot.DSharp
                 return;
             }
 
-            if (dayCat != null && dayCat.Type != DiscordChannelType.Category)
+            if (dayCat is not null && dayCat.Type != DiscordChannelType.Category)
             {
                 await ctx.RespondAsync($"**Error:** Channel `{dayCat.Name}` isn't a category!", true);
                 return;
             }
 
-            DSharpChannelCategory? dayCatWrapped = dayCat == null ? null : new DSharpChannelCategory(dayCat);
+            DSharpChannelCategory? dayCatWrapped = dayCat is null ? null : new DSharpChannelCategory(dayCat);
 
             await m_botSetup.RemoveTownAsync(new DSharpInteractionContext(ctx), dayCatWrapped);
         }

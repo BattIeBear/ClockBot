@@ -17,9 +17,12 @@ namespace Bot.DSharp
         public DSharpInteractionContext(SlashCommandContext wrapped, bool ephemeral = true)
             : base(wrapped)
         {
-            m_guild = new DSharpGuild(Wrapped.Guild);
+            var guild = Wrapped.Guild ?? throw new InvalidOperationException("This interaction must occur in a server.");
+            var member = Wrapped.Member ?? throw new InvalidOperationException("This interaction must be performed by a server member.");
+
+            m_guild = new DSharpGuild(guild);
             m_channel = new DSharpChannel(Wrapped.Channel);
-            m_member = new DSharpMember(Wrapped.Member);
+            m_member = new DSharpMember(member);
             m_ephemeral = ephemeral;
         }
 

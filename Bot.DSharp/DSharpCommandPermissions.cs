@@ -27,7 +27,7 @@ namespace Bot.DSharp
 
         public static async Task<bool> RequireStorytellerAsync(SlashCommandContext ctx)
         {
-            if (ctx.Guild == null || ctx.Member == null)
+            if (ctx.Guild is null || ctx.Member is null)
             {
                 await DenyAsync(ctx, "This command can only be used in a server.");
                 return false;

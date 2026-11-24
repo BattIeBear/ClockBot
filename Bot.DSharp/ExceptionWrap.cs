@@ -15,27 +15,27 @@ namespace Bot.DSharp
             }
             catch (DSharpPlus.Exceptions.BadRequestException e)
             {
-                throw new Api.BadRequestException(e, e.JsonMessage);
+                throw new Api.BadRequestException(e, e.JsonMessage ?? string.Empty);
             }
             catch (DSharpPlus.Exceptions.NotFoundException e)
             {
-                throw new Api.NotFoundException(e, e.JsonMessage);
+                throw new Api.NotFoundException(e, e.JsonMessage ?? string.Empty);
             }
             catch (DSharpPlus.Exceptions.RateLimitException e)
             {
-                throw new Api.RateLimitException(e, e.JsonMessage);
+                throw new Api.RateLimitException(e, e.JsonMessage ?? string.Empty);
             }
             catch (DSharpPlus.Exceptions.RequestSizeException e)
             {
-                throw new Api.RequestSizeException(e, e.JsonMessage);
+                throw new Api.RequestSizeException(e, e.JsonMessage ?? string.Empty);
             }
             catch (DSharpPlus.Exceptions.ServerErrorException e)
             {
-                throw new Api.ServerErrorException(e, e.JsonMessage); 
+                throw new Api.ServerErrorException(e, e.JsonMessage ?? string.Empty);
             }
             catch (DSharpPlus.Exceptions.UnauthorizedException e)
             {
-                throw new Api.UnauthorizedException(e, e.JsonMessage);
+                throw new Api.UnauthorizedException(e, e.JsonMessage ?? string.Empty);
             }
         }
     }
