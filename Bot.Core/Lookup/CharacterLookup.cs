@@ -25,7 +25,7 @@ namespace Bot.Core.Lookup
         }
 
         public Task RefreshCharactersAsync(ulong guildId) => m_storage.RefreshCharactersAsync(guildId);
-        
+
         private IEnumerable<GetCharactersItem> FilterMatchingCharacterItems(IEnumerable<GetCharactersItem> characterItems, string charString)
         {
             var allNames = characterItems.Select(ci => ci.Character.Name).Distinct().ToArray();
@@ -77,5 +77,22 @@ namespace Bot.Core.Lookup
                 return new string(s.ToLowerInvariant().Where(c => !char.IsWhiteSpace(c)).ToArray());
             }
         }
+        public async Task<IReadOnlyCollection<string>> GetCharacterNamesAsync(ulong guildId, string searchString)
+        {
+            if (string.IsNullOrWhiteSpace(searchString))
+                return Array.Empty<string>();
+
+            var charResult = await m_storage.GetCharactersAsync(guildId);
+
+            return charResult.Items
+                .Select(item => item.Character.Name)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Where(name => name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                .OrderByDescending(name => name.StartsWith(searchString, StringComparison.OrdinalIgnoreCase))
+                .ThenBy(name => name)
+                .Take(25)
+                .ToArray();
+        }
     }
+
 }

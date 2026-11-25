@@ -2,6 +2,7 @@
 using Bot.Api.Database;
 using Bot.Core.Interaction;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -28,6 +29,7 @@ namespace Bot.Core.Lookup
         public Task RemoveScriptAsync(IBotInteractionContext ctx, string scriptJsonUrl) => m_interactionWrapper.WrapInteractionAsync($"Removing script at \"{scriptJsonUrl}\"...", ctx, l => PerformRemoveScriptAsync(l, ctx, scriptJsonUrl));
         public Task ListScriptsAsync(IBotInteractionContext ctx) => m_interactionWrapper.WrapInteractionAsync($"Finding registered scripts...", ctx, l => PerformListScriptsAsync(l, ctx));
         public Task RefreshScriptsAsync(IBotInteractionContext ctx) => m_interactionWrapper.WrapInteractionAsync($"Refreshing scripts...", ctx, l => PerformRefreshScriptsAsync(l, ctx));
+        public Task<IReadOnlyCollection<string>> GetCharacterNamesAsync(ulong guildId, string searchString) => m_characterLookup.GetCharacterNamesAsync(guildId, searchString);
 
         private async Task<InteractionResult> PerformLookupAsync(IProcessLogger _, IBotInteractionContext ctx, string lookupString)
         {

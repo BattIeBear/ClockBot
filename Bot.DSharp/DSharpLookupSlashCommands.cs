@@ -1,8 +1,8 @@
-﻿
-using Bot.Api;
+﻿using Bot.Api;
 using DSharpPlus.Commands;
 using DSharpPlus.Commands.ContextChecks;
 using DSharpPlus.Commands.Processors.SlashCommands;
+using DSharpPlus.Commands.Processors.SlashCommands.ArgumentModifiers;
 using DSharpPlus.Entities;
 using System.ComponentModel;
 using System.Threading.Tasks;
@@ -22,7 +22,8 @@ namespace Bot.DSharp
         [Description("Look up a role")]
         public Task LookupCommand(
             SlashCommandContext ctx,
-            [Description("Role you want to look up")] string lookupString)
+            [Description("Role you want to look up")]
+            [SlashAutoCompleteProvider<DSharpRoleAutoCompleteProvider>] string lookupString)
         {
             return m_botLookup.LookupAsync(new DSharpInteractionContext(ctx), lookupString);
         }

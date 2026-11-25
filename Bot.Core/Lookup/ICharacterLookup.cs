@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Bot.Core.Lookup
 {
@@ -6,5 +7,6 @@ namespace Bot.Core.Lookup
     {
         Task<LookupCharacterResult> LookupCharacterAsync(ulong guildId, string charString);
         Task RefreshCharactersAsync(ulong guildId);
+        Task<IReadOnlyCollection<string>> GetCharacterNamesAsync(ulong guildId, string searchString);
     }
 }

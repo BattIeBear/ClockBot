@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Bot.Api
 {
@@ -9,5 +10,6 @@ namespace Bot.Api
         Task RemoveScriptAsync(IBotInteractionContext ctx, string scriptJsonUrl);
         Task ListScriptsAsync(IBotInteractionContext ctx);
         Task RefreshScriptsAsync(IBotInteractionContext ctx);
+        Task<IReadOnlyCollection<string>> GetCharacterNamesAsync(ulong guildId, string searchString);
     }
 }
