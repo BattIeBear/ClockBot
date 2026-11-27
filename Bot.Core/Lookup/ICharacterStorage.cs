@@ -7,6 +7,8 @@ namespace Bot.Core.Lookup
     public interface ICharacterStorage
     {
         Task<GetCharactersResult> GetCharactersAsync(ulong guildId);
+        Task<IReadOnlyCollection<string>> GetCharacterNamesAsync(ulong guildId);
+        void InvalidateCharacterNamesCache(ulong guildId);
         Task RefreshCharactersAsync(ulong guildId);
     }
 

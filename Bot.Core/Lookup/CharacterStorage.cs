@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Bot.Api.Database;
 
@@ -11,6 +13,8 @@ namespace Bot.Core.Lookup
         private readonly ILookupRoleDatabase m_lookupDb;
         private readonly IOfficialCharacterCache m_officialCache;
         private readonly ICustomScriptCache m_customCache;
+
+        private readonly ConcurrentDictionary<ulong, Lazy<Task<IReadOnlyCollection<string>>>> m_characterNamesCache = new();
 
         public CharacterStorage(IServiceProvider serviceProvider)
         {
@@ -23,7 +27,6 @@ namespace Bot.Core.Lookup
         {
             List<GetCharactersItem> items = new();
             var officialTask = m_officialCache.GetOfficialCharactersAsync();
-
             var guildCustomScriptUrls = await m_lookupDb.GetScriptUrlsAsync(guildId);
             var customScriptTasks = guildCustomScriptUrls.Select(m_customCache.GetCustomScriptAsync).ToArray();
 
@@ -31,7 +34,6 @@ namespace Bot.Core.Lookup
 
             foreach (var i in officialTask.Result.Items)
                 items.Add(new GetCharactersItem(i.Character, i.Scripts));
-
             foreach (var t in customScriptTasks)
                 foreach (var swc in t.Result.ScriptsWithCharacters)
                     foreach (var c in swc.Characters)
@@ -40,13 +42,69 @@ namespace Bot.Core.Lookup
             return new GetCharactersResult(items);
         }
 
+        public async Task<IReadOnlyCollection<string>> GetCharacterNamesAsync(ulong guildId)
+        {
+            var cachedNames = m_characterNamesCache.GetOrAdd(
+                guildId,
+                id => new Lazy<Task<IReadOnlyCollection<string>>>(
+                    () => LoadCharacterNamesAsync(id),
+                    LazyThreadSafetyMode.ExecutionAndPublication));
+
+            try
+            {
+                return await cachedNames.Value;
+            }
+            catch
+            {
+                var cache = (ICollection<KeyValuePair<ulong, Lazy<Task<IReadOnlyCollection<string>>>>>)m_characterNamesCache;
+                cache.Remove(new KeyValuePair<ulong, Lazy<Task<IReadOnlyCollection<string>>>>(guildId, cachedNames));
+                throw;
+            }
+        }
+
+        private async Task<IReadOnlyCollection<string>> LoadCharacterNamesAsync(ulong guildId)
+        {
+            var officialTask = m_officialCache.GetOfficialCharactersAsync();
+            var guildCustomScriptUrls = await m_lookupDb.GetScriptUrlsAsync(guildId);
+            var customScriptTasks = guildCustomScriptUrls
+                .Select(m_customCache.GetCustomScriptAsync)
+                .ToArray();
+
+            await Task.WhenAll(officialTask, Task.WhenAll(customScriptTasks));
+
+            var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var item in officialTask.Result.Items)
+                names.Add(item.Character.Name);
+
+            foreach (var task in customScriptTasks)
+            {
+                foreach (var script in task.Result.ScriptsWithCharacters)
+                {
+                    foreach (var character in script.Characters)
+                    {
+                        names.Add(character.Name);
+                    }
+                }
+            }
+
+            return names.ToArray();
+        }
+
+        public void InvalidateCharacterNamesCache(ulong guildId)
+        {
+            m_characterNamesCache.TryRemove(guildId, out _);
+        }
+
         public async Task RefreshCharactersAsync(ulong guildId)
         {
             var guildCustomScriptUrls = await m_lookupDb.GetScriptUrlsAsync(guildId);
-
             m_officialCache.InvalidateCache();
+
             foreach (var url in guildCustomScriptUrls)
                 m_customCache.InvalidateCache(url);
+
+            InvalidateCharacterNamesCache(guildId);
         }
     }
 }

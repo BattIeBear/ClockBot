@@ -18,6 +18,7 @@ namespace Test.Bot.Core.Lookup
         private readonly Mock<IBotInteractionContext> m_mockInteractionContext = new(MockBehavior.Strict);
         private readonly Mock<IGuildInteractionErrorHandler> m_mockGuildErrorHandler = new(MockBehavior.Strict);
         private readonly Mock<ICharacterLookup> m_mockCharacterLookup = new(MockBehavior.Strict);
+        private readonly Mock<ICharacterStorage> m_mockCharacterStorage = new(MockBehavior.Strict);
         private readonly Mock<IGuild> m_mockInteractionGuild = new(MockBehavior.Strict);
         private readonly Mock<IMember> m_mockInteractionAuthor = new(MockBehavior.Strict);
         private readonly Mock<IChannel> m_mockInteractionChannel = new(MockBehavior.Strict);
@@ -34,12 +35,14 @@ namespace Test.Bot.Core.Lookup
             RegisterMock(m_mockLookupDb);
             RegisterMock(m_mockGuildErrorHandler);
             RegisterMock(m_mockCharacterLookup);
+            RegisterMock(m_mockCharacterStorage);
             RegisterMock(m_mockLookupEmbedBuilder);
 
             m_mockLookupDb.Setup(ld => ld.AddScriptUrlAsync(It.IsAny<ulong>(), It.IsAny<string>())).Returns(Task.CompletedTask);
             m_mockLookupDb.Setup(ld => ld.RemoveScriptUrlAsync(It.IsAny<ulong>(), It.IsAny<string>())).Returns(Task.CompletedTask);
             m_mockLookupDb.Setup(ld => ld.GetScriptUrlsAsync(It.IsAny<ulong>())).ReturnsAsync(m_mockDbScriptUrls);
             m_mockCharacterLookup.Setup(cl => cl.LookupCharacterAsync(It.IsAny<ulong>(), It.IsAny<string>())).ReturnsAsync(new LookupCharacterResult(Enumerable.Empty<LookupCharacterItem>()));
+            m_mockCharacterStorage.Setup(cs => cs.InvalidateCharacterNamesCache(It.IsAny<ulong>()));
             m_mockCharacterLookup.Setup(cl => cl.RefreshCharactersAsync(It.IsAny<ulong>())).Returns(Task.CompletedTask);
             m_mockProcessLogger.Setup(pl => pl.LogException(It.IsAny<Exception>(), It.IsAny<string>()));
 

@@ -19,10 +19,10 @@ namespace Bot.DSharp
 
         public async ValueTask<IEnumerable<DiscordAutoCompleteChoice>> AutoCompleteAsync(AutoCompleteContext context)
         {
-            if (context.Guild is null || string.IsNullOrWhiteSpace(context.UserInput))
-            {
-                return Enumerable.Empty<DiscordAutoCompleteChoice>();
-            }
+            //if (context.Guild is null || string.IsNullOrWhiteSpace(context.UserInput))
+            //{
+            //    return Enumerable.Empty<DiscordAutoCompleteChoice>();
+            //}
 
             var names = await m_botLookup.GetCharacterNamesAsync(context.Guild.Id, context.UserInput);
 

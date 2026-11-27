@@ -1,7 +1,9 @@
 ﻿using Bot.Api.Database;
 using Bot.Core.Lookup;
 using Moq;
+using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Test.Bot.Base;
 using Xunit;
 
@@ -112,6 +114,96 @@ namespace Test.Bot.Core.Lookup
             m_mockCustomCache.Verify(cc => cc.InvalidateCache(It.Is<string>(s => s == testUrl1)), Times.Once);
             m_mockCustomCache.Verify(cc => cc.InvalidateCache(It.Is<string>(s => s == testUrl2)), Times.Once);
             m_mockCustomCache.VerifyNoOtherCalls();
+        }
+
+        [Fact]
+        public void CharacterStorage_GetCharacterNames_CachesAndInvalidatesNames()
+        {
+            ulong testGuildId = 123ul;
+
+            var firstCharacter = new CharacterData("id1", "First Character", "ability", CharacterTeam.Townsfolk, isOfficial: true);
+            var secondCharacter = new CharacterData("id2", "Second Character", "ability", CharacterTeam.Townsfolk, isOfficial: true);
+
+            m_mockOfficialCache
+                .SetupSequence(oc => oc.GetOfficialCharactersAsync())
+                .ReturnsAsync(new GetOfficialCharactersResult(new[] { new GetOfficialCharactersItem(firstCharacter, Enumerable.Empty<ScriptData>()) }))
+                .ReturnsAsync(new GetOfficialCharactersResult(new[] { new GetOfficialCharactersItem(secondCharacter, Enumerable.Empty<ScriptData>()) }));
+
+            var cs = new CharacterStorage(GetServiceProvider());
+
+            var firstResult = AssertCompletedTask(() => cs.GetCharacterNamesAsync(testGuildId));
+            var cachedResult = AssertCompletedTask(() => cs.GetCharacterNamesAsync(testGuildId));
+
+            Assert.Equal(new[] { "First Character" }, firstResult);
+            Assert.Equal(firstResult, cachedResult);
+
+            m_mockOfficialCache.Verify(oc => oc.GetOfficialCharactersAsync(), Times.Once);
+
+            cs.InvalidateCharacterNamesCache(testGuildId);
+
+            var refreshedResult = AssertCompletedTask(() => cs.GetCharacterNamesAsync(testGuildId));
+
+            Assert.Equal(new[] { "Second Character" }, refreshedResult);
+            m_mockOfficialCache.Verify(oc => oc.GetOfficialCharactersAsync(), Times.Exactly(2));
+        }
+
+        [Fact]
+        public void CharacterStorage_GetCharacterNames_DeduplicatesNamesIgnoringCase()
+        {
+            ulong testGuildId = 123ul;
+
+            var firstCharacter = new CharacterData("id1", "The Raven", "ability 1", CharacterTeam.Townsfolk, isOfficial: true);
+            var secondCharacter = new CharacterData("id2", "the raven", "ability 2", CharacterTeam.Demon, isOfficial: true);
+
+            m_mockOfficialCache.Setup(oc => oc.GetOfficialCharactersAsync())
+                .ReturnsAsync(new GetOfficialCharactersResult(new[]
+                {
+            new GetOfficialCharactersItem(firstCharacter, Enumerable.Empty<ScriptData>()),
+            new GetOfficialCharactersItem(secondCharacter, Enumerable.Empty<ScriptData>())
+                }));
+
+            var cs = new CharacterStorage(GetServiceProvider());
+
+            var result = AssertCompletedTask(() => cs.GetCharacterNamesAsync(testGuildId));
+
+            Assert.Equal(new[] { "The Raven" }, result);
+        }
+
+        [Fact]
+        public async Task CharacterStorage_GetCharacterNames_FailedOldRequestDoesNotRemoveNewCacheEntry()
+        {
+            ulong testGuildId = 123ul;
+
+            var oldRequest = new TaskCompletionSource<GetOfficialCharactersResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var newCharacter = new CharacterData("id2", "New Character", "ability", CharacterTeam.Townsfolk, isOfficial: true);
+            var newResult = new GetOfficialCharactersResult(new[]
+            {
+        new GetOfficialCharactersItem(newCharacter, Enumerable.Empty<ScriptData>())
+    });
+
+            m_mockOfficialCache
+                .SetupSequence(oc => oc.GetOfficialCharactersAsync())
+                .Returns(oldRequest.Task)
+                .ReturnsAsync(newResult);
+
+            var cs = new CharacterStorage(GetServiceProvider());
+
+            var oldRequestTask = cs.GetCharacterNamesAsync(testGuildId);
+
+            cs.InvalidateCharacterNamesCache(testGuildId);
+
+            var newRequestResult = await cs.GetCharacterNamesAsync(testGuildId);
+
+            Assert.Equal(new[] { "New Character" }, newRequestResult);
+
+            oldRequest.SetException(new InvalidOperationException("Simulated failure"));
+
+            await Assert.ThrowsAsync<InvalidOperationException>(() => oldRequestTask);
+
+            var cachedResult = await cs.GetCharacterNamesAsync(testGuildId);
+
+            Assert.Equal(new[] { "New Character" }, cachedResult);
+            m_mockOfficialCache.Verify(oc => oc.GetOfficialCharactersAsync(), Times.Exactly(2));
         }
     }
 }

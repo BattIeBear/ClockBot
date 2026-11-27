@@ -15,6 +15,7 @@ namespace Bot.Core.Lookup
         private readonly ILookupRoleDatabase m_lookupDb;
         private readonly ICharacterLookup m_characterLookup;
         private readonly ILookupEmbedBuilder m_lookupEmbedBuilder;
+        private readonly ICharacterStorage m_characterStorage;
 
         public BotLookupService(IServiceProvider serviceProvider)
         {
@@ -22,6 +23,7 @@ namespace Bot.Core.Lookup
             serviceProvider.Inject(out m_lookupDb);
             serviceProvider.Inject(out m_characterLookup);
             serviceProvider.Inject(out m_lookupEmbedBuilder);
+            serviceProvider.Inject(out m_characterStorage);
         }
 
         public Task LookupAsync(IBotInteractionContext ctx, string lookupString) => m_interactionWrapper.WrapInteractionAsync($"Looking up \"{lookupString}\"...", ctx, l => PerformLookupAsync(l, ctx, lookupString));
@@ -36,7 +38,9 @@ namespace Bot.Core.Lookup
             var lookupResult = await m_characterLookup.LookupCharacterAsync(ctx.Guild.Id, lookupString);
 
             if (lookupResult.Items.Count == 0)
+            {
                 return $"Found no results for \"{lookupString}\"";
+            }
             else
             {
                 string message = $"Found {lookupResult.Items.Count} result{(lookupResult.Items.Count > 1 ? "s" : "")} for \"{lookupString}\"";
@@ -48,12 +52,14 @@ namespace Bot.Core.Lookup
         private async Task<InteractionResult> PerformAddScriptAsync(IProcessLogger _, IBotInteractionContext ctx, string scriptJsonUrl)
         {
             await m_lookupDb.AddScriptUrlAsync(ctx.Guild.Id, scriptJsonUrl);
+            m_characterStorage.InvalidateCharacterNamesCache(ctx.Guild.Id);
             return $"Script \"{scriptJsonUrl}\" added to lookups for this server.";
         }
 
         private async Task<InteractionResult> PerformRemoveScriptAsync(IProcessLogger _, IBotInteractionContext ctx, string scriptJsonUrl)
         {
             await m_lookupDb.RemoveScriptUrlAsync(ctx.Guild.Id, scriptJsonUrl);
+            m_characterStorage.InvalidateCharacterNamesCache(ctx.Guild.Id);
             return $"Script \"{scriptJsonUrl}\" removed from lookups for this server.";
         }
 
@@ -61,12 +67,16 @@ namespace Bot.Core.Lookup
         {
             var scripts = await m_lookupDb.GetScriptUrlsAsync(ctx.Guild.Id);
             if (scripts.Count == 0)
+            {
                 return "No custom scripts have been added to this server.";
+            }
 
             var sb = new StringBuilder();
             sb.AppendLine("The following custom scripts were found for this server:");
             foreach (var script in scripts)
+            {
                 sb.AppendLine($"⦁ {script}");
+            }
             return sb.ToString();
         }
 

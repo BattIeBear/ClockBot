@@ -32,7 +32,9 @@ namespace Bot.Core.Lookup
             var matchedResult = Process.ExtractOne(charString, allNames, cutoff: 80);
 
             if (matchedResult != null)
+            {
                 return characterItems.Where(ci => ci.Character.Name == matchedResult.Value);
+            }
             return Enumerable.Empty<GetCharactersItem>();
         }
 
@@ -42,7 +44,9 @@ namespace Bot.Core.Lookup
             List<(string, string, CharacterTeam)> order = new();
 
             foreach (var item in items)
+            {
                 MergeCharactersItem(merged, order, item);
+            }
 
             return order.Select(t =>
             {
@@ -77,16 +81,17 @@ namespace Bot.Core.Lookup
                 return new string(s.ToLowerInvariant().Where(c => !char.IsWhiteSpace(c)).ToArray());
             }
         }
+
         public async Task<IReadOnlyCollection<string>> GetCharacterNamesAsync(ulong guildId, string searchString)
         {
             if (string.IsNullOrWhiteSpace(searchString))
+            {
                 return Array.Empty<string>();
+            }
 
-            var charResult = await m_storage.GetCharactersAsync(guildId);
+            var names = await m_storage.GetCharacterNamesAsync(guildId);
 
-            return charResult.Items
-                .Select(item => item.Character.Name)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
+            return names
                 .Where(name => name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 .OrderByDescending(name => name.StartsWith(searchString, StringComparison.OrdinalIgnoreCase))
                 .ThenBy(name => name)
@@ -94,5 +99,4 @@ namespace Bot.Core.Lookup
                 .ToArray();
         }
     }
-
 }

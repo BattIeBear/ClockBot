@@ -4,9 +4,10 @@
 
 * Complete rewrite of the bot in C# using .NET 10 and DSharpPlus 5.
 * Replaced the legacy Python implementation with the new C# application.
-* Updated Discord command handling to use DSharpPlus Commands.
 * Updated project dependencies and resolved known security vulnerabilities.
 * Improved error handling, nullability, and overall code maintainability.
+* Added character autocomplete to the /role command, supporting official and server-specific custom characters.
+* Added the /playercount command.
 
 ## Version 3.0.0
 
